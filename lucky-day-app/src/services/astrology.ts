@@ -416,29 +416,298 @@ export function calculateFourPillars(birthDetails: BirthDetails): FourPillars {
   }
 }
 
-export function generatePillarDescriptions(pillars: FourPillars): PillarDescriptions {
-  // This will be implemented in task 3.3
-  throw new Error('Pillar descriptions generation not yet implemented');
+/**
+ * Generates poetic descriptions for each of the Four Pillars
+ * Each pillar represents a different aspect of destiny and personality
+ */
+export async function generatePillarDescriptions(pillars: FourPillars): Promise<PillarDescriptions> {
+  try {
+    // Use centralized LLM service for creative descriptions
+    if (llmService.isServiceAvailable()) {
+      const systemPrompt = "You are a mystical Chinese astrology expert who creates poetic, meaningful descriptions for the Four Pillars of Destiny (Ba Zi). Each pillar represents a different aspect of a person's destiny and should be described in a mystical, reflective tone.";
+
+      const userPrompt = `Generate poetic descriptions for the Four Pillars of Destiny based on these stem-branch combinations:
+
+Year Pillar (Destiny): ${pillars.year.stem}${pillars.year.branch} (${pillars.year.element})
+Month Pillar (Environment): ${pillars.month.stem}${pillars.month.branch} (${pillars.month.element})
+Day Pillar (Essence): ${pillars.day.stem}${pillars.day.branch} (${pillars.day.element})
+Hour Pillar (Inner Heart): ${pillars.hour.stem}${pillars.hour.branch} (${pillars.hour.element})
+
+Requirements:
+- Each description should be 1-2 sentences
+- Use mystical, poetic language that feels authentic to Chinese philosophy
+- Focus on the meaning and energy of each pillar's role:
+  * Year Pillar: Overall destiny and life path
+  * Month Pillar: Environment and relationships
+  * Day Pillar: Core essence and personality
+  * Hour Pillar: Inner heart and spiritual nature
+- Consider the elements and their interactions
+- Keep descriptions positive and meaningful
+- Write in English
+
+Format your response as:
+Year: [description]
+Month: [description]
+Day: [description]
+Hour: [description]`;
+
+      const response = await llmService.generateContent({
+        systemPrompt,
+        userPrompt,
+        maxTokens: 300,
+        temperature: 0.8
+      });
+
+      // Parse the response to extract individual descriptions
+      const descriptions = parsePillarDescriptions(response.content);
+      return descriptions;
+    } else {
+      console.warn('LLM service not available, using fallback');
+      return generateFallbackPillarDescriptions(pillars);
+    }
+  } catch (error) {
+    console.warn('Failed to generate pillar descriptions with LLM service, using fallback:', error);
+    return generateFallbackPillarDescriptions(pillars);
+  }
 }
 
-export function generateEssenceSummary(zodiac: ChineseZodiac, pillars: FourPillars): string {
-  // This will be implemented in task 3.3
-  throw new Error('Essence summary generation not yet implemented');
+/**
+ * Parses LLM response to extract pillar descriptions
+ */
+function parsePillarDescriptions(response: string): PillarDescriptions {
+  const lines = response.split('\n').filter(line => line.trim());
+  const descriptions: Partial<PillarDescriptions> = {};
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('Year:')) {
+      descriptions.year = trimmed.substring(5).trim();
+    } else if (trimmed.startsWith('Month:')) {
+      descriptions.month = trimmed.substring(6).trim();
+    } else if (trimmed.startsWith('Day:')) {
+      descriptions.day = trimmed.substring(4).trim();
+    } else if (trimmed.startsWith('Hour:')) {
+      descriptions.hour = trimmed.substring(5).trim();
+    }
+  }
+
+  // Ensure all descriptions are present, use fallback if missing
+  return {
+    year: descriptions.year || 'Your destiny flows like a river, shaped by ancient wisdom and future possibilities.',
+    month: descriptions.month || 'Your environment nurtures growth, like fertile soil beneath the changing seasons.',
+    day: descriptions.day || 'Your essence shines with unique light, a star in the constellation of being.',
+    hour: descriptions.hour || 'Your inner heart beats with the rhythm of the cosmos, deep and eternal.'
+  };
+}
+
+/**
+ * Fallback pillar descriptions when LLM is unavailable
+ */
+function generateFallbackPillarDescriptions(pillars: FourPillars): PillarDescriptions {
+  // Element-based description templates
+  const elementDescriptions = {
+    wood: {
+      year: 'Your destiny grows like a mighty tree, reaching toward the heavens with patience and strength.',
+      month: 'Your environment flourishes with creative energy, nurturing new beginnings and fresh growth.',
+      day: 'Your essence flows with natural grace, bending without breaking, adapting to life\'s seasons.',
+      hour: 'Your inner heart pulses with the rhythm of spring, eternally hopeful and regenerative.'
+    },
+    fire: {
+      year: 'Your destiny burns bright with passion and purpose, illuminating the path for others to follow.',
+      month: 'Your environment crackles with dynamic energy, inspiring transformation and bold action.',
+      day: 'Your essence radiates warmth and light, drawing others to your magnetic presence.',
+      hour: 'Your inner heart blazes with the fire of inspiration, never dimming in its intensity.'
+    },
+    earth: {
+      year: 'Your destiny stands firm like ancient mountains, providing stability and enduring wisdom.',
+      month: 'Your environment offers solid ground for growth, reliable and nurturing to all who seek shelter.',
+      day: 'Your essence embodies the strength of stone and the fertility of soil, grounded yet generous.',
+      hour: 'Your inner heart beats with the steady rhythm of the earth, patient and deeply rooted.'
+    },
+    metal: {
+      year: 'Your destiny shines with the clarity of polished steel, cutting through illusion to reveal truth.',
+      month: 'Your environment resonates with precision and order, creating harmony through structure.',
+      day: 'Your essence reflects like a mirror, showing both strength and the ability to conduct energy.',
+      hour: 'Your inner heart rings like a temple bell, clear and pure in its resonance.'
+    },
+    water: {
+      year: 'Your destiny flows like an ancient river, finding its way through any obstacle with gentle persistence.',
+      month: 'Your environment moves with fluid grace, adapting and shaping the landscape around you.',
+      day: 'Your essence runs deep like hidden springs, nourishing life with quiet wisdom.',
+      hour: 'Your inner heart flows with the tides of intuition, connected to the moon\'s eternal dance.'
+    }
+  };
+
+  return {
+    year: elementDescriptions[pillars.year.element as keyof typeof elementDescriptions]?.year || 
+          'Your destiny unfolds with the wisdom of the ages, guided by celestial forces.',
+    month: elementDescriptions[pillars.month.element as keyof typeof elementDescriptions]?.month || 
+           'Your environment shapes you with gentle persistence, like wind carving stone.',
+    day: elementDescriptions[pillars.day.element as keyof typeof elementDescriptions]?.day || 
+         'Your essence shines with unique brilliance, a jewel in the crown of existence.',
+    hour: elementDescriptions[pillars.hour.element as keyof typeof elementDescriptions]?.hour || 
+          'Your inner heart beats with ancient rhythms, connected to the pulse of the universe.'
+  };
+}
+
+/**
+ * Generates a 3-line zodiac essence summary combining zodiac and pillars
+ */
+export async function generateEssenceSummary(zodiac: ChineseZodiac, pillars: FourPillars): Promise<string> {
+  try {
+    // Use centralized LLM service for creative summary
+    if (llmService.isServiceAvailable()) {
+      const systemPrompt = "You are a mystical Chinese astrology expert who creates beautiful, poetic essence summaries. Create exactly 3 lines that capture the spiritual essence of a person based on their zodiac and Four Pillars.";
+
+      const userPrompt = `Create a 3-line zodiac essence summary for someone with:
+
+Zodiac: ${zodiac.element} ${zodiac.animal} (${zodiac.year})
+Four Pillars: 
+- Year: ${pillars.year.stem}${pillars.year.branch} (${pillars.year.element})
+- Month: ${pillars.month.stem}${pillars.month.branch} (${pillars.month.element})
+- Day: ${pillars.day.stem}${pillars.day.branch} (${pillars.day.element})
+- Hour: ${pillars.hour.stem}${pillars.hour.branch} (${pillars.hour.element})
+
+Requirements:
+- Exactly 3 lines, each line should be poetic and meaningful
+- Incorporate the zodiac animal and element naturally
+- Reference the interplay of the pillar elements
+- Use mystical, beautiful language that feels authentic to Chinese philosophy
+- Each line should flow into the next, creating a cohesive spiritual portrait
+- Keep it positive and inspiring
+- Write in English
+
+Example format:
+Born under the [element] [animal], you carry the wisdom of [concept]
+Your pillars dance between [elements], creating harmony in [aspect]
+In your heart flows the eternal [metaphor], guiding you toward [destiny]`;
+
+      const response = await llmService.generateContent({
+        systemPrompt,
+        userPrompt,
+        maxTokens: 150,
+        temperature: 0.9
+      });
+
+      // Clean up the response and ensure it's exactly 3 lines
+      const lines = response.content.split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0);
+
+      if (lines.length >= 3) {
+        return lines.slice(0, 3).join('\n');
+      } else {
+        // If LLM didn't provide 3 lines, use fallback
+        return generateFallbackEssenceSummary(zodiac, pillars);
+      }
+    } else {
+      console.warn('LLM service not available, using fallback');
+      return generateFallbackEssenceSummary(zodiac, pillars);
+    }
+  } catch (error) {
+    console.warn('Failed to generate essence summary with LLM service, using fallback:', error);
+    return generateFallbackEssenceSummary(zodiac, pillars);
+  }
+}
+
+/**
+ * Fallback essence summary when LLM is unavailable
+ */
+function generateFallbackEssenceSummary(zodiac: ChineseZodiac, pillars: FourPillars): string {
+  // Get the dominant elements from pillars
+  const elements = [pillars.year.element, pillars.month.element, pillars.day.element, pillars.hour.element];
+  const elementCounts = elements.reduce((acc, element) => {
+    acc[element] = (acc[element] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  
+  const dominantElement = Object.entries(elementCounts)
+    .sort(([,a], [,b]) => b - a)[0][0];
+
+  // Animal-specific essence templates
+  const animalEssences = {
+    rat: {
+      line1: `Born under the ${zodiac.element} rat, you carry the wisdom of resourcefulness and adaptability`,
+      line2: `Your pillars weave between ${dominantElement} and spirit, creating harmony in clever solutions`,
+      line3: `In your heart flows the eternal stream of opportunity, guiding you toward hidden treasures`
+    },
+    ox: {
+      line1: `Born under the ${zodiac.element} ox, you carry the wisdom of patience and steady strength`,
+      line2: `Your pillars dance between ${dominantElement} and earth, creating harmony in persistent effort`,
+      line3: `In your heart flows the eternal rhythm of seasons, guiding you toward lasting achievement`
+    },
+    tiger: {
+      line1: `Born under the ${zodiac.element} tiger, you carry the wisdom of courage and noble spirit`,
+      line2: `Your pillars blaze between ${dominantElement} and fire, creating harmony in bold action`,
+      line3: `In your heart flows the eternal roar of justice, guiding you toward righteous victory`
+    },
+    rabbit: {
+      line1: `Born under the ${zodiac.element} rabbit, you carry the wisdom of gentleness and intuition`,
+      line2: `Your pillars flow between ${dominantElement} and moon, creating harmony in peaceful grace`,
+      line3: `In your heart flows the eternal spring of compassion, guiding you toward healing others`
+    },
+    dragon: {
+      line1: `Born under the ${zodiac.element} dragon, you carry the wisdom of transformation and power`,
+      line2: `Your pillars soar between ${dominantElement} and sky, creating harmony in majestic purpose`,
+      line3: `In your heart flows the eternal fire of destiny, guiding you toward legendary greatness`
+    },
+    snake: {
+      line1: `Born under the ${zodiac.element} snake, you carry the wisdom of mystery and deep knowledge`,
+      line2: `Your pillars coil between ${dominantElement} and shadow, creating harmony in hidden truths`,
+      line3: `In your heart flows the eternal serpent of wisdom, guiding you toward profound understanding`
+    },
+    horse: {
+      line1: `Born under the ${zodiac.element} horse, you carry the wisdom of freedom and swift movement`,
+      line2: `Your pillars gallop between ${dominantElement} and wind, creating harmony in joyful journey`,
+      line3: `In your heart flows the eternal spirit of adventure, guiding you toward distant horizons`
+    },
+    goat: {
+      line1: `Born under the ${zodiac.element} goat, you carry the wisdom of creativity and gentle strength`,
+      line2: `Your pillars graze between ${dominantElement} and cloud, creating harmony in artistic beauty`,
+      line3: `In your heart flows the eternal song of peace, guiding you toward harmonious expression`
+    },
+    monkey: {
+      line1: `Born under the ${zodiac.element} monkey, you carry the wisdom of cleverness and playful spirit`,
+      line2: `Your pillars swing between ${dominantElement} and laughter, creating harmony in joyful innovation`,
+      line3: `In your heart flows the eternal dance of curiosity, guiding you toward delightful discoveries`
+    },
+    rooster: {
+      line1: `Born under the ${zodiac.element} rooster, you carry the wisdom of dawn and proud confidence`,
+      line2: `Your pillars crow between ${dominantElement} and light, creating harmony in honest expression`,
+      line3: `In your heart flows the eternal call of truth, guiding you toward brilliant awakening`
+    },
+    dog: {
+      line1: `Born under the ${zodiac.element} dog, you carry the wisdom of loyalty and protective love`,
+      line2: `Your pillars guard between ${dominantElement} and heart, creating harmony in faithful service`,
+      line3: `In your heart flows the eternal bond of devotion, guiding you toward noble companionship`
+    },
+    pig: {
+      line1: `Born under the ${zodiac.element} pig, you carry the wisdom of abundance and generous spirit`,
+      line2: `Your pillars feast between ${dominantElement} and joy, creating harmony in shared prosperity`,
+      line3: `In your heart flows the eternal well of kindness, guiding you toward bountiful happiness`
+    }
+  };
+
+  const essence = animalEssences[zodiac.animal];
+  return `${essence.line1}\n${essence.line2}\n${essence.line3}`;
 }
 
 /**
  * Creates a complete astrological profile from birth details
- * Includes zodiac calculation and Four Pillars computation
+ * Includes zodiac calculation, Four Pillars computation, descriptions, and essence summary
  */
-export async function createAstrologicalProfile(birthDetails: BirthDetails): Promise<Partial<AstrologicalProfile>> {
+export async function createAstrologicalProfile(birthDetails: BirthDetails): Promise<AstrologicalProfile> {
   const zodiac = calculateChineseZodiac(birthDetails.date);
   const mysticalNickname = await generateMysticalNickname(zodiac);
   const pillars = calculateFourPillars(birthDetails);
+  const pillarDescriptions = await generatePillarDescriptions(pillars);
+  const essenceSummary = await generateEssenceSummary(zodiac, pillars);
 
   return {
     zodiac,
     mysticalNickname,
-    pillars
-    // pillarDescriptions and essenceSummary will be added in later tasks
+    pillars,
+    pillarDescriptions,
+    essenceSummary
   };
 }

@@ -46,14 +46,14 @@
     - Update task.readme.md with implementation details and testing instructions
     - _Requirements: 3.3, 3.6_
 
-  - [ ] 3.3 Create mystical nickname and description generator
+  - [x] 3.3 Create mystical nickname and description generator
     - Generate adjective + zodiac combinations for nicknames
     - Create poetic descriptions for each pillar (Year/Month/Day/Hour)
     - Generate 3-line zodiac essence summaries
     - Update task.readme.md with implementation details and testing instructions
     - _Requirements: 3.4, 4.2, 4.3_
 
-  - [ ] 3.4 Write unit tests for astrology calculations
+  - [x] 3.4 Write unit tests for astrology calculations
     - Test zodiac calculations with known birth dates
     - Verify Four Pillars accuracy against reference data
     - Test edge cases and error conditions
