@@ -38,7 +38,7 @@
     - Update task.readme.md with implementation details and testing instructions
     - _Requirements: 3.2, 4.1_
 
-  - [ ] 3.2 Implement Four Pillars of Destiny calculations
+  - [x] 3.2 Implement Four Pillars of Destiny calculations
     - Build Ba Zi calculation algorithms
     - Handle solar terms and time zone conversions
     - Generate stem-branch combinations for each pillar

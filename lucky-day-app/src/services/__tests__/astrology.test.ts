@@ -3,7 +3,7 @@
  * Tests zodiac calculation, lunar calendar conversion, and edge cases
  */
 
-import { calculateChineseZodiac, generateMysticalNickname, generateMysticalNicknameFromBirthDate, createAstrologicalProfile } from '../astrology';
+import { calculateChineseZodiac, generateMysticalNickname, generateMysticalNicknameFromBirthDate, createAstrologicalProfile, calculateFourPillars } from '../astrology';
 import { BirthDetails } from '../../types/astrology';
 
 describe('Chinese Zodiac Calculation', () => {
@@ -277,8 +277,238 @@ describe('Chinese Zodiac Calculation', () => {
     });
   });
 
+  describe('calculateFourPillars', () => {
+    test('calculates Four Pillars for known birth details', () => {
+      const birthDetails: BirthDetails = {
+        date: new Date('1988-08-15'),
+        time: '14:30',
+        location: {
+          latitude: 40.7128,
+          longitude: -74.0060,
+          timezone: 'America/New_York'
+        }
+      };
+
+      const pillars = calculateFourPillars(birthDetails);
+      
+      expect(pillars).toBeDefined();
+      expect(pillars.year).toBeDefined();
+      expect(pillars.month).toBeDefined();
+      expect(pillars.day).toBeDefined();
+      expect(pillars.hour).toBeDefined();
+      
+      // Each pillar should have stem, branch, and element
+      expect(pillars.year.stem).toBeDefined();
+      expect(pillars.year.branch).toBeDefined();
+      expect(pillars.year.element).toBeDefined();
+      
+      expect(pillars.month.stem).toBeDefined();
+      expect(pillars.month.branch).toBeDefined();
+      expect(pillars.month.element).toBeDefined();
+      
+      expect(pillars.day.stem).toBeDefined();
+      expect(pillars.day.branch).toBeDefined();
+      expect(pillars.day.element).toBeDefined();
+      
+      expect(pillars.hour.stem).toBeDefined();
+      expect(pillars.hour.branch).toBeDefined();
+      expect(pillars.hour.element).toBeDefined();
+    });
+
+    test('defaults to noon when birth time is unknown', () => {
+      const birthDetails: BirthDetails = {
+        date: new Date('1988-08-15'),
+        time: null, // Unknown time
+        location: {
+          latitude: 40.7128,
+          longitude: -74.0060,
+          timezone: 'America/New_York'
+        }
+      };
+
+      const pillars = calculateFourPillars(birthDetails);
+      
+      // Should calculate successfully with noon default
+      expect(pillars).toBeDefined();
+      expect(pillars.hour).toBeDefined();
+      
+      // Hour pillar should correspond to noon (11-13 range = 午 branch)
+      expect(pillars.hour.branch).toBe('午');
+    });
+
+    test('handles different birth times correctly', () => {
+      const baseBirthDetails = {
+        date: new Date('1988-08-15'),
+        location: {
+          latitude: 40.7128,
+          longitude: -74.0060,
+          timezone: 'America/New_York'
+        }
+      };
+
+      // Test different hours
+      const morningDetails = { ...baseBirthDetails, time: '06:30' };
+      const afternoonDetails = { ...baseBirthDetails, time: '15:45' };
+      const nightDetails = { ...baseBirthDetails, time: '23:15' };
+
+      const morningPillars = calculateFourPillars(morningDetails);
+      const afternoonPillars = calculateFourPillars(afternoonDetails);
+      const nightPillars = calculateFourPillars(nightDetails);
+
+      // Hour pillars should be different
+      expect(morningPillars.hour.branch).toBe('卯'); // 05-07 hours
+      expect(afternoonPillars.hour.branch).toBe('申'); // 15-17 hours
+      expect(nightPillars.hour.branch).toBe('子'); // 23-01 hours
+
+      // Year, month, day pillars should be the same
+      expect(morningPillars.year).toEqual(afternoonPillars.year);
+      expect(morningPillars.month).toEqual(afternoonPillars.month);
+      expect(morningPillars.day).toEqual(afternoonPillars.day);
+    });
+
+    test('calculates consistent results for same birth details', () => {
+      const birthDetails: BirthDetails = {
+        date: new Date('1995-12-25'),
+        time: '10:15',
+        location: {
+          latitude: 35.6762,
+          longitude: 139.6503,
+          timezone: 'Asia/Tokyo'
+        }
+      };
+
+      const pillars1 = calculateFourPillars(birthDetails);
+      const pillars2 = calculateFourPillars(birthDetails);
+
+      expect(pillars1).toEqual(pillars2);
+    });
+
+    test('handles edge cases around midnight', () => {
+      const birthDetails: BirthDetails = {
+        date: new Date('2000-01-01'),
+        time: '00:30', // Just after midnight
+        location: {
+          latitude: 40.7128,
+          longitude: -74.0060,
+          timezone: 'America/New_York'
+        }
+      };
+
+      const pillars = calculateFourPillars(birthDetails);
+      
+      expect(pillars).toBeDefined();
+      expect(pillars.hour.branch).toBe('子'); // Midnight hour
+    });
+
+    test('validates stem and branch combinations', () => {
+      const birthDetails: BirthDetails = {
+        date: new Date('1988-08-15'),
+        time: '14:30',
+        location: {
+          latitude: 40.7128,
+          longitude: -74.0060,
+          timezone: 'America/New_York'
+        }
+      };
+
+      const pillars = calculateFourPillars(birthDetails);
+      
+      // Validate that stems and branches are from correct sets
+      const validStems = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
+      const validBranches = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+      const validElements = ['wood', 'fire', 'earth', 'metal', 'water'];
+
+      expect(validStems).toContain(pillars.year.stem);
+      expect(validBranches).toContain(pillars.year.branch);
+      expect(validElements).toContain(pillars.year.element);
+
+      expect(validStems).toContain(pillars.month.stem);
+      expect(validBranches).toContain(pillars.month.branch);
+      expect(validElements).toContain(pillars.month.element);
+
+      expect(validStems).toContain(pillars.day.stem);
+      expect(validBranches).toContain(pillars.day.branch);
+      expect(validElements).toContain(pillars.day.element);
+
+      expect(validStems).toContain(pillars.hour.stem);
+      expect(validBranches).toContain(pillars.hour.branch);
+      expect(validElements).toContain(pillars.hour.element);
+    });
+
+    test('handles different years correctly', () => {
+      const testCases = [
+        { year: 1984, expectedYearStem: '甲', expectedYearBranch: '子' }, // Rat year
+        { year: 1985, expectedYearStem: '乙', expectedYearBranch: '丑' }, // Ox year
+        { year: 2000, expectedYearStem: '庚', expectedYearBranch: '辰' }, // Dragon year
+        { year: 2020, expectedYearStem: '庚', expectedYearBranch: '子' }  // Rat year
+      ];
+
+      testCases.forEach(({ year, expectedYearStem, expectedYearBranch }) => {
+        const birthDetails: BirthDetails = {
+          date: new Date(`${year}-06-15`),
+          time: '12:00',
+          location: {
+            latitude: 40.7128,
+            longitude: -74.0060,
+            timezone: 'America/New_York'
+          }
+        };
+
+        const pillars = calculateFourPillars(birthDetails);
+        expect(pillars.year.stem).toBe(expectedYearStem);
+        expect(pillars.year.branch).toBe(expectedYearBranch);
+      });
+    });
+
+    test('handles leap years correctly', () => {
+      const leapYearDetails: BirthDetails = {
+        date: new Date('2000-02-29'), // Leap year date
+        time: '12:00',
+        location: {
+          latitude: 40.7128,
+          longitude: -74.0060,
+          timezone: 'America/New_York'
+        }
+      };
+
+      const pillars = calculateFourPillars(leapYearDetails);
+      expect(pillars).toBeDefined();
+      expect(pillars.year.branch).toBe('辰'); // Dragon year 2000
+    });
+
+    test('handles Chinese New Year boundary correctly', () => {
+      // Test dates around Chinese New Year to ensure correct year pillar
+      const beforeNewYear: BirthDetails = {
+        date: new Date('2020-01-20'), // Before Chinese New Year 2020 (Jan 25)
+        time: '12:00',
+        location: {
+          latitude: 40.7128,
+          longitude: -74.0060,
+          timezone: 'America/New_York'
+        }
+      };
+
+      const afterNewYear: BirthDetails = {
+        date: new Date('2020-02-01'), // After Chinese New Year 2020
+        time: '12:00',
+        location: {
+          latitude: 40.7128,
+          longitude: -74.0060,
+          timezone: 'America/New_York'
+        }
+      };
+
+      const beforePillars = calculateFourPillars(beforeNewYear);
+      const afterPillars = calculateFourPillars(afterNewYear);
+
+      // Before New Year should be 2019 (Pig year), after should be 2020 (Rat year)
+      expect(beforePillars.year.branch).toBe('亥'); // Pig
+      expect(afterPillars.year.branch).toBe('子'); // Rat
+    });
+  });
+
   describe('createAstrologicalProfile', () => {
-    test('creates partial profile with zodiac and nickname', async () => {
+    test('creates profile with zodiac, nickname, and pillars', async () => {
       const birthDetails: BirthDetails = {
         date: new Date('1988-08-15'),
         time: '14:30',
@@ -298,12 +528,18 @@ describe('Chinese Zodiac Calculation', () => {
       
       expect(profile.mysticalNickname).toBeDefined();
       expect(profile.mysticalNickname).toContain('Dragon');
+      
+      expect(profile.pillars).toBeDefined();
+      expect(profile.pillars?.year).toBeDefined();
+      expect(profile.pillars?.month).toBeDefined();
+      expect(profile.pillars?.day).toBeDefined();
+      expect(profile.pillars?.hour).toBeDefined();
     });
 
-    test('handles different birth locations', async () => {
+    test('handles different birth locations and unknown time', async () => {
       const birthDetails: BirthDetails = {
         date: new Date('1995-12-25'),
-        time: null, // Unknown time
+        time: null, // Unknown time - should default to noon
         location: {
           latitude: 35.6762,
           longitude: 139.6503,
@@ -316,6 +552,9 @@ describe('Chinese Zodiac Calculation', () => {
       expect(profile.zodiac).toBeDefined();
       expect(profile.zodiac?.animal).toBe('pig');
       expect(profile.zodiac?.element).toBe('wood');
+      
+      expect(profile.pillars).toBeDefined();
+      expect(profile.pillars?.hour.branch).toBe('午'); // Noon hour
     });
   });
 
