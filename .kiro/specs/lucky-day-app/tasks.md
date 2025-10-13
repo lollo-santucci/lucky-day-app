@@ -31,7 +31,7 @@
     - _Requirements: 12.1, 12.3_
 
 - [ ] 3. Build Chinese astrology calculation engine
-  - [ ] 3.1 Implement Chinese zodiac calculation
+  - [x] 3.1 Implement Chinese zodiac calculation
     - Create lunar calendar conversion utilities
     - Calculate zodiac animal and element from birth date
     - Handle edge cases around Chinese New Year
