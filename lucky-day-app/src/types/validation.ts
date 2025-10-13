@@ -142,13 +142,13 @@ export function validateFortune(data: any): ValidationResult {
     if (!data.expiresAt || !(data.expiresAt instanceof Date) || isNaN(data.expiresAt.getTime())) {
         errors.push('Valid expiresAt date is required');
     } else if (data.generatedAt && data.generatedAt instanceof Date) {
-        // Verify that expiration is set to 8am the next day
+        // Verify that expiration is set to 8am UTC the next day
         const expectedExpiration = new Date(data.generatedAt);
-        expectedExpiration.setDate(expectedExpiration.getDate() + 1);
-        expectedExpiration.setHours(8, 0, 0, 0);
+        expectedExpiration.setUTCDate(expectedExpiration.getUTCDate() + 1);
+        expectedExpiration.setUTCHours(8, 0, 0, 0);
         
         if (data.expiresAt.getTime() !== expectedExpiration.getTime()) {
-            errors.push('Fortune must expire at 8am the next day after generation');
+            errors.push('Fortune must expire at 8am UTC the next day after generation');
         }
     }
 

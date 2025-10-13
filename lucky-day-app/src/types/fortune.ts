@@ -28,13 +28,13 @@ export interface Fortune {
 export type FortuneSource = Fortune['source'];
 
 /**
- * Calculates the expiration date for a fortune (8am the next day)
+ * Calculates the expiration date for a fortune (8am UTC the next day)
  * @param generatedAt The date when the fortune was generated
- * @returns Date object set to 8am the next day
+ * @returns Date object set to 8am UTC the next day
  */
 export function calculateFortuneExpiration(generatedAt: Date): Date {
   const nextDay = new Date(generatedAt);
-  nextDay.setDate(nextDay.getDate() + 1);
-  nextDay.setHours(8, 0, 0, 0); // Set to 8:00:00.000 AM
+  nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+  nextDay.setUTCHours(8, 0, 0, 0); // Set to 8:00:00.000 AM UTC
   return nextDay;
 }

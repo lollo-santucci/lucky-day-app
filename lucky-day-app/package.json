@@ -1,7 +1,7 @@
 {
   "name": "lucky-day-app",
   "version": "1.0.0",
-  "type": "module",
+
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
@@ -10,7 +10,10 @@
     "web": "expo start --web",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",
@@ -19,6 +22,7 @@
     "@react-navigation/stack": "^7.4.9",
     "expo": "~54.0.13",
     "expo-av": "^16.0.7",
+    "expo-crypto": "^15.0.7",
     "expo-location": "^19.0.7",
     "expo-notifications": "^0.32.12",
     "expo-status-bar": "~3.0.8",
@@ -30,11 +34,16 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.37.0",
+    "@types/jest": "^30.0.0",
     "@types/react": "~19.1.0",
+    "@types/react-test-renderer": "^19.1.0",
     "@typescript-eslint/eslint-plugin": "^8.46.0",
     "@typescript-eslint/parser": "^8.46.0",
     "eslint": "^9.37.0",
     "eslint-config-expo": "^10.0.0",
+    "jest": "^30.2.0",
+    "react-test-renderer": "^19.1.0",
+    "ts-jest": "^29.4.5",
     "typescript": "~5.9.2"
   },
   "private": true

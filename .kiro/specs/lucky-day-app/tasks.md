@@ -16,14 +16,14 @@
     - Update task.readme.md with implementation details and testing instructions
     - _Requirements: 3.2, 3.3, 4.1_
 
-  - [ ] 2.2 Implement local storage utilities
+  - [x] 2.2 Implement local storage utilities
     - Create AsyncStorage wrapper with error handling
     - Implement data serialization/deserialization
     - Add storage encryption for sensitive data
     - Update task.readme.md with implementation details and testing instructions
     - _Requirements: 7.1, 9.1, 9.5_
 
-  - [ ] 2.3 Write unit tests for data models
+  - [x] 2.3 Write unit tests for data models
     - Test data validation functions
     - Test storage operations and error handling
     - Verify data integrity across app sessions
