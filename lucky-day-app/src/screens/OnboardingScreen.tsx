@@ -11,9 +11,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BirthDetailsForm } from '../components/BirthDetailsForm';
 import { BirthDetails } from '../types';
+import { ProfileManager, ProfileCreationError } from '../services';
+import { AstrologicalProfile } from '../types/astrology';
 
 interface OnboardingScreenProps {
-  onComplete: (birthDetails: BirthDetails) => void;
+  onComplete: (profile: AstrologicalProfile) => void;
 }
 
 export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
@@ -33,9 +35,37 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
         return;
       }
 
-      onComplete(birthDetails);
+      // Create and save the astrological profile
+      const profile = await ProfileManager.createAndSaveProfile(birthDetails);
+      
+      // Profile creation successful, pass it to the parent component
+      onComplete(profile);
+      
     } catch (error) {
-      Alert.alert('Error', 'Failed to process birth details. Please try again.');
+      console.error('Profile creation failed:', error);
+      
+      let errorMessage = 'Failed to create your astrological profile. Please try again.';
+      
+      if (error instanceof ProfileCreationError) {
+        switch (error.step) {
+          case 'zodiac_calculation':
+            errorMessage = 'Failed to calculate your Chinese zodiac. Please check your birth date.';
+            break;
+          case 'pillars_calculation':
+            errorMessage = 'Failed to calculate your Four Pillars. Please check your birth details.';
+            break;
+          case 'storage_save':
+            errorMessage = 'Failed to save your profile. Please check your device storage.';
+            break;
+          case 'profile_validation':
+            errorMessage = 'Profile validation failed. Please try again.';
+            break;
+          default:
+            errorMessage = `Profile creation failed: ${error.message}`;
+        }
+      }
+      
+      Alert.alert('Profile Creation Error', errorMessage);
     } finally {
       setIsSubmitting(false);
     }

@@ -10,3 +10,5 @@ export {
 } from './astrology';
 
 export { llmService, LLMService } from './llm';
+
+export { ProfileManager, ProfileCreationError } from './profileManager';
