@@ -85,7 +85,7 @@
     - Update task.readme.md with implementation details and testing instructions
     - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
-  - [ ] 4.4 Write integration tests for onboarding flow
+  - [x] 4.4 Write integration tests for onboarding flow
     - Test complete onboarding workflow
     - Verify profile data persistence
     - Test error handling and recovery

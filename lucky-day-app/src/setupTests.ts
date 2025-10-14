@@ -4,15 +4,7 @@
  */
 
 // Mock AsyncStorage
-const mockAsyncStorage = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  multiRemove: jest.fn(),
-  getAllKeys: jest.fn(),
-};
-
-jest.mock('@react-native-async-storage/async-storage', () => mockAsyncStorage);
+jest.mock('@react-native-async-storage/async-storage', () => require('./__mocks__/asyncStorage.js'));
 
 // Mock expo-crypto
 jest.mock('expo-crypto', () => ({
@@ -23,7 +15,7 @@ jest.mock('expo-crypto', () => ({
 }));
 
 // Global test utilities
-(global as any).mockAsyncStorage = mockAsyncStorage;
+(global as any).mockAsyncStorage = require('./__mocks__/asyncStorage.js');
 
 // Reset all mocks before each test
 beforeEach(() => {
