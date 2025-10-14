@@ -77,7 +77,7 @@
     - Update task.readme.md with implementation details and testing instructions
     - _Requirements: 3.2, 3.3, 3.4, 3.5_
 
-  - [ ] 4.3 Create profile viewing screen
+  - [x] 4.3 Create profile viewing screen
     - Display zodiac sign and mystical nickname
     - Show Four Pillars descriptions with labels
     - Present 3-line essence summary

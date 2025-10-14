@@ -15,22 +15,30 @@ import { componentStyles, theme } from '../styles/index';
 
 interface BirthDetailsFormProps {
   onSubmit: (birthDetails: BirthDetails) => void;
-  isSubmitting?: boolean;
+  onCancel?: () => void;
+  isLoading?: boolean;
+  submitButtonText?: string;
+  initialValues?: BirthDetails;
 }
 
 export const BirthDetailsForm: React.FC<BirthDetailsFormProps> = ({
   onSubmit,
-  isSubmitting = false,
+  onCancel,
+  isLoading = false,
+  submitButtonText = 'Create My Profile',
+  initialValues,
 }) => {
-  const [birthDetails, setBirthDetails] = useState<BirthDetails>({
-    date: new Date(),
-    time: null,
-    location: {
-      latitude: 0,
-      longitude: 0,
-      timezone: 'UTC',
-    },
-  });
+  const [birthDetails, setBirthDetails] = useState<BirthDetails>(
+    initialValues || {
+      date: new Date(),
+      time: null,
+      location: {
+        latitude: 0,
+        longitude: 0,
+        timezone: 'UTC',
+      },
+    }
+  );
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -124,15 +132,27 @@ export const BirthDetailsForm: React.FC<BirthDetailsFormProps> = ({
         />
       </View>
 
-      <TouchableOpacity
-        style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
-        onPress={handleSubmit}
-        disabled={isSubmitting}
-      >
-        <Text style={styles.submitButtonText}>
-          {isSubmitting ? 'Creating Your Profile...' : 'Create My Profile'}
-        </Text>
-      </TouchableOpacity>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={[styles.submitButton, isLoading && styles.submitButtonDisabled]}
+          onPress={handleSubmit}
+          disabled={isLoading}
+        >
+          <Text style={styles.submitButtonText}>
+            {isLoading ? 'Processing...' : submitButtonText}
+          </Text>
+        </TouchableOpacity>
+        
+        {onCancel && (
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={onCancel}
+            disabled={isLoading}
+          >
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+          </TouchableOpacity>
+        )}
+      </View>
 
       <Text style={styles.disclaimer}>
         * Required fields. Your birth details are used only for astrological calculations and remain private on your device.
@@ -183,5 +203,24 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 16,
     paddingHorizontal: 20,
+  },
+  buttonContainer: {
+    marginTop: 24,
+    marginBottom: 16,
+  },
+  cancelButton: {
+    backgroundColor: 'transparent',
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: '#B83330',
+  },
+  cancelButtonText: {
+    color: '#B83330',
+    fontSize: 16,
+    fontWeight: '500',
   },
 });

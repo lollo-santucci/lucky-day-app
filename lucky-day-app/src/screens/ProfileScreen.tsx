@@ -6,29 +6,75 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AstrologicalProfile } from '../types/astrology';
+import { AstrologicalProfile, BirthDetails } from '../types/astrology';
 import { ProfileManager, ProfileCreationError } from '../services';
 import { theme } from '../styles';
+import { BirthDetailsForm } from '../components';
 
 interface ProfileScreenProps {
   profile: AstrologicalProfile;
-  onEdit?: () => void;
+  onProfileUpdate?: (updatedProfile: AstrologicalProfile) => void;
   onBack?: () => void;
 }
 
 export const ProfileScreen: React.FC<ProfileScreenProps> = ({ 
   profile, 
-  onEdit, 
+  onProfileUpdate, 
   onBack 
 }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [currentProfile, setCurrentProfile] = useState(profile);
 
   const handleEditProfile = () => {
-    if (onEdit) {
-      onEdit();
+    setIsEditModalVisible(true);
+  };
+
+  const handleProfileEditSubmit = async (birthDetails: BirthDetails) => {
+    try {
+      setIsLoading(true);
+      
+      // Create new profile from updated birth details
+      const updatedProfile = await ProfileManager.createProfile(birthDetails);
+      
+      // Save the updated profile
+      await ProfileManager.saveProfile(updatedProfile);
+      
+      // Update local state
+      setCurrentProfile(updatedProfile);
+      
+      // Notify parent component
+      if (onProfileUpdate) {
+        onProfileUpdate(updatedProfile);
+      }
+      
+      setIsEditModalVisible(false);
+      
+      Alert.alert(
+        'Profile Updated',
+        'Your astrological profile has been successfully updated.',
+        [{ text: 'OK', style: 'default' }]
+      );
+      
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+      
+      let errorMessage = 'Failed to update profile. Please try again.';
+      if (error instanceof ProfileCreationError) {
+        errorMessage = `Update failed: ${error.message}`;
+      }
+      
+      Alert.alert('Update Error', errorMessage);
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const handleEditCancel = () => {
+    setIsEditModalVisible(false);
   };
 
   const handleExportProfile = async () => {
@@ -87,9 +133,9 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Mystical Identity</Text>
           <View style={styles.nicknameContainer}>
-            <Text style={styles.nickname}>{profile.mysticalNickname}</Text>
+            <Text style={styles.nickname}>{currentProfile.mysticalNickname}</Text>
             <Text style={styles.zodiacInfo}>
-              {capitalizeAnimal(profile.zodiac.element)} {capitalizeAnimal(profile.zodiac.animal)} • {profile.zodiac.year}
+              {capitalizeAnimal(currentProfile.zodiac.element)} {capitalizeAnimal(currentProfile.zodiac.animal)} • {currentProfile.zodiac.year}
             </Text>
           </View>
         </View>
@@ -101,7 +147,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
             The cosmic forces that shape your path through life
           </Text>
           
-          {Object.entries(profile.pillars).map(([pillarType, pillarData]) => (
+          {Object.entries(currentProfile.pillars).map(([pillarType, pillarData]) => (
             <View key={pillarType} style={styles.pillarContainer}>
               <View style={styles.pillarHeader}>
                 <Text style={styles.pillarTitle}>
@@ -112,7 +158,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                 </Text>
               </View>
               <Text style={styles.pillarDescription}>
-                {profile.pillarDescriptions[pillarType as keyof typeof profile.pillarDescriptions]}
+                {currentProfile.pillarDescriptions[pillarType as keyof typeof currentProfile.pillarDescriptions]}
               </Text>
             </View>
           ))}
@@ -125,7 +171,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
             The spiritual signature of your cosmic blueprint
           </Text>
           <View style={styles.essenceContainer}>
-            {profile.essenceSummary.split('\n').map((line, index) => (
+            {currentProfile.essenceSummary.split('\n').map((line, index) => (
               <Text key={index} style={styles.essenceLine}>
                 {line.trim()}
               </Text>
@@ -135,15 +181,13 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
 
         {/* Action Buttons */}
         <View style={styles.actionContainer}>
-          {onEdit && (
-            <TouchableOpacity
-              style={[styles.actionButton, styles.editButton]}
-              onPress={handleEditProfile}
-              disabled={isLoading}
-            >
-              <Text style={styles.editButtonText}>Edit Profile</Text>
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity
+            style={[styles.actionButton, styles.editButton]}
+            onPress={handleEditProfile}
+            disabled={isLoading}
+          >
+            <Text style={styles.editButtonText}>Edit Profile</Text>
+          </TouchableOpacity>
           
           <TouchableOpacity
             style={[styles.actionButton, styles.exportButton]}
@@ -165,6 +209,41 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
           </TouchableOpacity>
         )}
       </ScrollView>
+
+      {/* Edit Profile Modal */}
+      <Modal
+        visible={isEditModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={handleEditCancel}
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={handleEditCancel}>
+              <Text style={styles.cancelButton}>Cancel</Text>
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>Edit Profile</Text>
+            <View style={styles.headerSpacer} />
+          </View>
+          
+          <BirthDetailsForm
+            onSubmit={handleProfileEditSubmit}
+            onCancel={handleEditCancel}
+            isLoading={isLoading}
+            submitButtonText="Update Profile"
+            initialValues={{
+              // We don't have access to original birth details, so user needs to re-enter
+              date: new Date(),
+              time: null,
+              location: {
+                latitude: 0,
+                longitude: 0,
+                timezone: 'UTC'
+              }
+            }}
+          />
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -312,5 +391,32 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: theme.colors.primary,
     fontWeight: '500',
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: theme.colors.text,
+  },
+  cancelButton: {
+    fontSize: 16,
+    color: theme.colors.primary,
+    fontWeight: '500',
+  },
+  headerSpacer: {
+    width: 60, // Same width as cancel button to center the title
   },
 });

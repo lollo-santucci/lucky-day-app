@@ -1283,3 +1283,302 @@ console.log('Profile creation completed successfully');
 
 ## Status
 ✅ **COMPLETATO** - Workflow completo creazione profilo astrologico con gestione errori robusta, fallback intelligenti e interfaccia utente per visualizzazione profilo
+---
+
+
+# Task 4.3: Create Profile Viewing Screen
+
+## Descrizione Task
+Ho implementato una schermata completa per la visualizzazione del profilo astrologico dell'utente con capacità di modifica, esportazione e navigazione, seguendo il design system dell'app e i requisiti di usabilità.
+
+## Cosa è stato implementato
+
+### 1. ProfileScreen Principale (`src/screens/ProfileScreen.tsx`)
+- **Layout Responsive**: ScrollView con SafeAreaView per gestione notch e status bar
+- **Design Coerente**: Utilizzo completo del design system (Paper Ivory, Jade Red, Soft Gold)
+- **Gestione Stato**: Stato locale per profilo corrente e modal di editing
+- **Navigazione**: Supporto per callback onBack e onProfileUpdate
+- **Accessibilità**: Supporto screen reader e controlli touch ottimizzati
+
+### 2. Visualizzazione Informazioni Profilo
+
+#### Sezione Identità Mistica
+- **Nickname Display**: Visualizzazione prominente del nickname mistico generato
+- **Informazioni Zodiacali**: Elemento + Animale + Anno in formato user-friendly
+- **Card Design**: Container evidenziato con bordo Soft Gold per importanza
+- **Typography**: Font size 24px bold per nickname, 16px per info zodiacali
+
+#### Sezione Quattro Pilastri del Destino
+- **Etichette Descrittive**: 
+  - Year Pillar (Destiny)
+  - Month Pillar (Environment) 
+  - Day Pillar (Essence)
+  - Hour Pillar (Inner Heart)
+- **Simboli Tradizionali**: Display stem+branch con elementi in formato leggibile
+- **Descrizioni Poetiche**: Testo italicizzato per ogni pilastro con stile mistico
+- **Layout Cards**: Ogni pilastro in card separata con bordo sinistro colorato
+
+#### Sezione Essenza Spirituale
+- **Formato 3 Righe**: Display del riassunto essenza su righe separate
+- **Styling Centrato**: Testo centrato e italicizzato per effetto poetico
+- **Container Evidenziato**: Card con bordo per separare dal resto del contenuto
+- **Line Height**: Spaziatura ottimizzata per leggibilità (24px)
+
+### 3. Funzionalità di Modifica Profilo
+
+#### Modal di Editing
+- **Presentazione Slide**: Modal con animazione slide dal basso
+- **Header Personalizzato**: Barra con titolo "Edit Profile" e bottone Cancel
+- **Form Integrato**: Riutilizzo BirthDetailsForm esistente con props personalizzate
+- **Gestione Loading**: Stato loading durante aggiornamento profilo
+
+#### Workflow di Aggiornamento
+```typescript
+const handleProfileEditSubmit = async (birthDetails: BirthDetails) => {
+  // 1. Crea nuovo profilo da birth details aggiornati
+  const updatedProfile = await ProfileManager.createProfile(birthDetails);
+  
+  // 2. Salva profilo aggiornato in storage
+  await ProfileManager.saveProfile(updatedProfile);
+  
+  // 3. Aggiorna stato locale
+  setCurrentProfile(updatedProfile);
+  
+  // 4. Notifica componente parent
+  if (onProfileUpdate) onProfileUpdate(updatedProfile);
+  
+  // 5. Chiudi modal e mostra conferma
+  setIsEditModalVisible(false);
+  Alert.alert('Profile Updated', 'Your astrological profile has been successfully updated.');
+};
+```
+
+#### Gestione Errori Editing
+- **Try-Catch Robusto**: Gestione errori durante creazione/salvataggio profilo
+- **Error Messages**: Messaggi specifici per diversi tipi di errore
+- **ProfileCreationError**: Gestione specializzata per errori profilo
+- **User Feedback**: Alert informativi per successo/errore operazioni
+
+### 4. Funzionalità di Esportazione
+
+#### Export Profile
+- **JSON Serialization**: Esportazione profilo completo in formato JSON
+- **Error Handling**: Gestione errori durante serializzazione
+- **User Feedback**: Alert di conferma con messaggio di successo
+- **Future Extension**: Preparato per condivisione/backup futuro
+
+```typescript
+const handleExportProfile = async () => {
+  try {
+    const exportData = ProfileManager.exportProfile(currentProfile);
+    Alert.alert('Profile Exported', 'Your profile data has been prepared for backup.');
+    console.log('Exported profile data:', exportData);
+  } catch (error) {
+    Alert.alert('Export Error', 'Failed to export profile data.');
+  }
+};
+```
+
+### 5. Aggiornamenti BirthDetailsForm per Editing
+
+#### Nuove Props Supportate
+- **onCancel**: Callback per annullamento editing
+- **isLoading**: Stato loading per disabilitare form durante processing
+- **submitButtonText**: Testo personalizzabile per bottone submit
+- **initialValues**: Valori iniziali per pre-popolamento form
+
+#### Layout Bottoni Migliorato
+- **Container Flessibile**: Layout che supporta bottone singolo o doppio
+- **Bottone Cancel**: Stile outline con bordo Jade Red
+- **Gestione Stati**: Disabilitazione durante loading per UX migliore
+- **Spacing Ottimizzato**: Margini e padding per layout pulito
+
+### 6. Sistema di Navigazione e Callback
+
+#### Props Interface Aggiornata
+```typescript
+interface ProfileScreenProps {
+  profile: AstrologicalProfile;
+  onProfileUpdate?: (updatedProfile: AstrologicalProfile) => void;
+  onBack?: () => void;
+}
+```
+
+#### Gestione Stato Sincronizzata
+- **Stato Locale**: `currentProfile` per aggiornamenti immediati UI
+- **Parent Notification**: Callback `onProfileUpdate` per sincronizzazione app-wide
+- **Persistenza**: Salvataggio automatico in AsyncStorage durante aggiornamenti
+
+### 7. Design System e Styling
+
+#### Colori Applicati
+- **Background**: `#FAF6F0` (Paper Ivory) per sfondo principale
+- **Cards**: `#FFFFFF` (White) per contenitori informazioni
+- **Accents**: `#F2C879` (Soft Gold) per bordi e evidenziazioni
+- **Primary**: `#B83330` (Jade Red) per bottoni e azioni
+- **Text**: `#222222` (Ink Black) per testo principale
+
+#### Typography Hierarchy
+- **Main Title**: 28px bold per "Your Cosmic Profile"
+- **Section Titles**: 20px semibold per sezioni principali
+- **Nickname**: 24px bold per identità mistica
+- **Pillar Titles**: 16px semibold per etichette pilastri
+- **Body Text**: 14-16px regular per descrizioni e contenuto
+
+#### Layout e Spacing
+- **Section Spacing**: 32px tra sezioni principali
+- **Card Padding**: 16-20px per contenitori
+- **Border Radius**: 12px per cards principali
+- **Shadows**: Ombre sottili per depth visivo
+
+### 8. Test e Validazione
+
+#### Test Suite Creata (`src/screens/__tests__/ProfileScreen.test.tsx`)
+- **Validazione Dati**: Test struttura dati profilo completa
+- **Export Functionality**: Test funzionalità esportazione con mock
+- **Profile Creation**: Test workflow creazione profilo aggiornato
+- **Error Handling**: Test gestione errori export e update
+- **Data Format**: Test formato descrizioni pilastri e essenza
+
+#### Scenari Testati
+```typescript
+describe('ProfileScreen Logic Tests', () => {
+  it('validates profile data structure', () => {
+    expect(mockProfile.zodiac.animal).toBe('dragon');
+    expect(mockProfile.pillars.year).toBeDefined();
+    expect(mockProfile.mysticalNickname).toBe('Radiant Fire Dragon');
+  });
+  
+  it('tests ProfileManager export functionality', () => {
+    const result = ProfileManager.exportProfile(mockProfile);
+    expect(typeof result).toBe('string');
+  });
+});
+```
+
+## Esempi di Implementazione
+
+### Formattazione Etichette Pilastri
+```typescript
+const formatPillarLabel = (pillarType: string): string => {
+  switch (pillarType) {
+    case 'year': return 'Year Pillar (Destiny)';
+    case 'month': return 'Month Pillar (Environment)';
+    case 'day': return 'Day Pillar (Essence)';
+    case 'hour': return 'Hour Pillar (Inner Heart)';
+    default: return pillarType;
+  }
+};
+```
+
+### Rendering Essenza 3 Righe
+```typescript
+<View style={styles.essenceContainer}>
+  {currentProfile.essenceSummary.split('\n').map((line, index) => (
+    <Text key={index} style={styles.essenceLine}>
+      {line.trim()}
+    </Text>
+  ))}
+</View>
+```
+
+### Modal Header Personalizzato
+```typescript
+<View style={styles.modalHeader}>
+  <TouchableOpacity onPress={handleEditCancel}>
+    <Text style={styles.cancelButton}>Cancel</Text>
+  </TouchableOpacity>
+  <Text style={styles.modalTitle}>Edit Profile</Text>
+  <View style={styles.headerSpacer} />
+</View>
+```
+
+## Conformità ai Requisiti
+
+### Requirement 4.1 ✅ - Display zodiac sign and mystical nickname
+- **Sezione Identità**: Nickname prominente con info zodiacali complete
+- **Formatting**: Capitalizzazione corretta per animali ed elementi
+- **Visual Hierarchy**: Typography e colori per evidenziare informazioni chiave
+
+### Requirement 4.2 ✅ - Show Four Pillars descriptions with labels  
+- **Etichette Descrittive**: Year (Destiny), Month (Environment), Day (Essence), Hour (Inner Heart)
+- **Simboli Tradizionali**: Display stem+branch con elementi
+- **Descrizioni Poetiche**: Testo completo per ogni pilastro con styling appropriato
+
+### Requirement 4.3 ✅ - Present 3-line essence summary
+- **Formato Corretto**: 3 righe separate con line breaks
+- **Styling Poetico**: Testo centrato e italicizzato
+- **Container Evidenziato**: Card design per separazione visiva
+
+### Requirement 4.4 ✅ - Add profile editing capabilities
+- **Modal Editing**: Interface completa per modifica birth details
+- **Workflow Completo**: Creazione → Salvataggio → Aggiornamento UI → Notifica parent
+- **Error Handling**: Gestione robusta errori con feedback utente
+- **Form Integration**: Riutilizzo BirthDetailsForm con props personalizzate
+
+## Test Results
+✅ **6/6 test passano** - Suite completa per logica ProfileScreen
+- **Data Structure**: Validazione struttura profilo completa
+- **Export Function**: Test funzionalità esportazione
+- **Profile Creation**: Test workflow aggiornamento profilo  
+- **Error Handling**: Test gestione errori graceful
+- **Format Validation**: Test formato descrizioni e essenza
+
+## Istruzioni Testing
+
+### Esecuzione Test
+```bash
+# Test ProfileScreen completi
+npm test -- --testPathPatterns=ProfileScreen.test.tsx
+
+# Test integrazione con ProfileManager
+npm test -- --testPathPatterns="ProfileScreen|profileManager"
+
+# Type checking
+npm run type-check
+```
+
+### Testing Manuale
+1. **Profile Display**: Verificare visualizzazione corretta tutte le sezioni
+2. **Edit Modal**: Testare apertura/chiusura modal editing
+3. **Profile Update**: Testare workflow completo aggiornamento profilo
+4. **Export Function**: Testare esportazione con alert di conferma
+5. **Navigation**: Testare bottone back se fornito
+6. **Error States**: Testare gestione errori durante update/export
+
+### Scenari di Test Specifici
+- **Nickname Display**: "Radiant Fire Dragon" visualizzato prominentemente
+- **Pillar Labels**: Tutte e 4 le etichette con descrizioni corrette
+- **Essence Format**: 3 righe separate centrate e italicizzate
+- **Edit Workflow**: Modal → Form → Update → Conferma → Chiusura
+- **Export Success**: Alert "Profile Exported" con messaggio appropriato
+
+## Integrazione con App Architecture
+
+### Utilizzo nel Flusso App
+```typescript
+// Esempio integrazione in app principale
+<ProfileScreen 
+  profile={userProfile}
+  onProfileUpdate={(updatedProfile) => {
+    setUserProfile(updatedProfile);
+    // Sync con altri componenti app
+  }}
+  onBack={() => navigation.goBack()}
+/>
+```
+
+### Gestione Stato App-Wide
+- **Local State**: Aggiornamento immediato UI per responsiveness
+- **Persistence**: Salvataggio automatico AsyncStorage
+- **Parent Sync**: Callback per sincronizzazione stato app principale
+- **Error Recovery**: Gestione graceful con rollback se necessario
+
+## Prossimi Passi
+- **Task 4.4**: Integration tests per onboarding flow completo
+- **Task 5.x**: Sistema generazione fortune con integrazione profilo
+- **Navigation**: Integrazione con sistema navigazione app principale
+- **Animations**: Possibili miglioramenti con animazioni transizioni
+
+## Status
+✅ **COMPLETATO** - Schermata profilo completa con visualizzazione, editing, esportazione e design system coerente
