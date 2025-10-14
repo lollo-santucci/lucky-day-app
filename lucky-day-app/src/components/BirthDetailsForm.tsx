@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import { BirthDetails } from '../types';
+import { BirthDetails } from '../types/astrology';
 import { DatePicker } from './DatePicker';
 import { TimePicker } from './TimePicker';
 import { LocationPicker } from './LocationPicker';

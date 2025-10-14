@@ -32,7 +32,7 @@ export class StorageError extends Error {
 }
 
 /**
- * Encrypts sensitive data using AES encryption
+ * Encrypts sensitive data using simple encoding
  */
 async function encryptData(data: string): Promise<string> {
     try {
@@ -42,7 +42,8 @@ async function encryptData(data: string): Promise<string> {
             Crypto.CryptoDigestAlgorithm.SHA256,
             ENCRYPTION_KEY + data
         );
-        const encoded = Buffer.from(data).toString('base64');
+        // Use btoa for base64 encoding in React Native
+        const encoded = btoa(unescape(encodeURIComponent(data)));
         return `${hash.substring(0, 16)}:${encoded}`;
     } catch (error) {
         throw new StorageError(
@@ -62,7 +63,8 @@ async function decryptData(encryptedData: string): Promise<string> {
             throw new Error('Invalid encrypted data format');
         }
 
-        const decoded = Buffer.from(encoded, 'base64').toString();
+        // Use atob for base64 decoding in React Native
+        const decoded = decodeURIComponent(escape(atob(encoded)));
 
         // Verify the hash
         const expectedHash = await Crypto.digestStringAsync(
