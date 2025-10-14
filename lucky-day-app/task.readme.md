@@ -478,3 +478,211 @@ npm test -- --testPathPatterns=astrology.test.ts --testNamePattern="performance"
 
 ## Status
 ✅ **COMPLETATO** - Suite test completa per calcoli astrologici con 54 test, copertura edge cases e validazione accuratezza
+
+---
+
+# Task 4.1: Build Birth Details Input Screens
+
+## Descrizione Task
+Ho implementato il sistema completo di input per i dettagli di nascita durante l'onboarding, con componenti modulari per data, ora e posizione, validazione robusta e gestione errori user-friendly.
+
+## Cosa è stato implementato
+
+### 1. OnboardingScreen Principale (`src/screens/OnboardingScreen.tsx`)
+- **Layout Responsive**: ScrollView con KeyboardAvoidingView per gestione tastiera
+- **Design System**: Utilizzo colori brand (Paper Ivory, Ink Black, Jade Red)
+- **Gestione Stato**: Controllo loading e validazione form
+- **Error Handling**: Alert user-friendly per errori validazione
+- **Accessibilità**: SafeAreaView e supporto screen reader
+
+### 2. BirthDetailsForm Core (`src/components/BirthDetailsForm.tsx`)
+- **Gestione Stato Unificata**: Stato centralizzato per tutti i dettagli nascita
+- **Validazione Real-time**: Validazione immediata con feedback visivo
+- **Integrazione Validatori**: Utilizzo sistema validazione esistente
+- **UX Ottimizzata**: Sezioni chiare con descrizioni esplicative
+- **Disclaimer Privacy**: Informazioni trasparenti su uso dati
+
+### 3. DatePicker Avanzato (`src/components/DatePicker.tsx`)
+- **Cross-Platform**: Supporto iOS (spinner) e Android (native picker)
+- **Validazione Date**: Prevenzione date future, range 1900-oggi
+- **Formattazione Locale**: Display date in formato leggibile
+- **Gestione Errori**: Feedback visivo per errori validazione
+- **Accessibilità**: Supporto screen reader e controlli touch
+
+#### Funzionalità DatePicker
+- **iOS**: Picker inline con header "Done" e animazioni smooth
+- **Android**: Picker nativo del sistema con gestione automatica
+- **Validazione**: Blocco date future e range anni validi
+- **Styling**: Design coerente con sistema colori app
+
+### 4. TimePicker Flessibile (`src/components/TimePicker.tsx`)
+- **Gestione Ora Opzionale**: Checkbox "I don't know my birth time"
+- **Default Intelligente**: Mezzogiorno quando ora sconosciuta (Requirement 3.6)
+- **Formato 12h**: Display AM/PM user-friendly
+- **Stato Visivo**: Disabilitazione visiva quando ora sconosciuta
+- **Cross-Platform**: Supporto iOS spinner e Android native
+
+#### Funzionalità TimePicker
+- **Toggle Unknown**: Checkbox per gestire ora sconosciuta
+- **Default Noon**: Automatico a 12:00 quando abilitato da unknown
+- **Format Conversion**: Conversione HH:MM ↔ 12h display format
+- **Visual States**: Stati disabilitato/abilitato con styling appropriato
+
+### 5. LocationPicker Intelligente (`src/components/LocationPicker.tsx`)
+- **Ricerca Città**: Input con suggerimenti in tempo reale
+- **Geolocalizzazione**: Bottone per posizione corrente con permessi
+- **Database Città**: Mock database con 10 città principali mondiali
+- **Timezone Detection**: Rilevamento automatico timezone per città
+- **Gestione Permessi**: Richiesta permessi location con fallback graceful
+
+#### Funzionalità LocationPicker
+- **Search Suggestions**: Filtro real-time su nome città e paese
+- **Current Location**: Bottone GPS con ActivityIndicator durante rilevamento
+- **City Database**: New York, London, Tokyo, Paris, Sydney, Los Angeles, Berlin, Beijing, Mumbai, São Paulo
+- **Timezone Mapping**: Mapping automatico timezone per ogni città
+- **Visual Feedback**: Selezione evidenziata con colore Soft Gold
+
+### 6. Validazione e Error Handling
+- **Validazione Integrata**: Utilizzo `validateBirthDetails()` esistente
+- **Feedback Real-time**: Rimozione errori durante correzione input
+- **Messaggi Chiari**: Errori specifici e actionable per utente
+- **Gestione Graceful**: Fallback per servizi non disponibili (GPS, LLM)
+
+### 7. Dipendenze Aggiunte
+```json
+{
+  "@react-native-community/datetimepicker": "^8.2.0",
+  "react-native-modal": "^13.0.1"
+}
+```
+
+## Esempi di Implementazione
+
+### Gestione Stato Form
+```typescript
+const [birthDetails, setBirthDetails] = useState<BirthDetails>({
+  date: new Date(),
+  time: null,
+  location: { latitude: 0, longitude: 0, timezone: 'UTC' }
+});
+
+const updateBirthDate = (date: Date) => {
+  setBirthDetails(prev => ({ ...prev, date }));
+  if (errors.date) setErrors(prev => ({ ...prev, date: '' }));
+};
+```
+
+### Validazione Form
+```typescript
+const validateForm = (): boolean => {
+  const validation = validateBirthDetails(birthDetails);
+  if (!validation.isValid) {
+    const newErrors: Record<string, string> = {};
+    if (!birthDetails.date) newErrors.date = 'Birth date is required';
+    if (!birthDetails.location.latitude) newErrors.location = 'Birth location is required';
+    setErrors(newErrors);
+    return false;
+  }
+  return true;
+};
+```
+
+### Geolocalizzazione con Permessi
+```typescript
+const getCurrentLocation = async () => {
+  const { status } = await Location.requestForegroundPermissionsAsync();
+  if (status !== 'granted') {
+    Alert.alert('Permission Required', 'Location permission needed...');
+    return;
+  }
+  
+  const location = await Location.getCurrentPositionAsync({
+    accuracy: Location.Accuracy.Balanced,
+  });
+  // Processo location e timezone...
+};
+```
+
+## Design System Applicato
+
+### Colori Brand
+- **Background**: `#FAF6F0` (Paper Ivory)
+- **Text Primary**: `#222222` (Ink Black)
+- **Accent**: `#B83330` (Jade Red)
+- **Selection**: `#F2C879` (Soft Gold)
+- **Borders**: `#E0E0E0` (Light Gray)
+
+### Typography
+- **Titles**: 28px bold per header principale
+- **Section Titles**: 18px semibold per sezioni form
+- **Body Text**: 16px regular per input e descrizioni
+- **Help Text**: 12-14px per disclaimer e suggerimenti
+
+### Spacing e Layout
+- **Section Spacing**: 32px tra sezioni principali
+- **Element Spacing**: 16px tra elementi correlati
+- **Padding**: 20px per container principali
+- **Border Radius**: 8-12px per elementi interattivi
+
+## Test e Validazione
+
+### Test Componenti Creati
+- **OnboardingScreen.test.tsx**: Test rendering e submit flow
+- **DatePicker.test.tsx**: Test selezione date e validazione
+- **TimePicker.test.tsx**: Test gestione ora e stato unknown
+- **LocationPicker.test.tsx**: Test ricerca città e selezione
+
+### Scenari Testati
+- **Rendering Corretto**: Tutti i componenti renderizzano senza errori
+- **Validazione Form**: Errori mostrati per campi obbligatori mancanti
+- **Gestione Stato**: Aggiornamenti stato corretti per ogni input
+- **Error Recovery**: Rimozione errori durante correzione input
+- **Cross-Platform**: Comportamento coerente iOS/Android
+
+## Conformità ai Requisiti
+
+### Requirement 3.1 ✅
+- **Data Nascita**: DatePicker con validazione range 1900-oggi
+- **Ora Nascita**: TimePicker con gestione opzionale
+- **Posizione**: LocationPicker con ricerca e GPS
+
+### Requirement 3.6 ✅
+- **Ora Sconosciuta**: Default mezzogiorno con informazione utente
+- **Gestione Graceful**: Checkbox "I don't know my birth time"
+- **User Feedback**: Messaggio chiaro su limitazioni calcolo
+
+### Task Details ✅
+- **Date Picker**: ✅ Implementato con validazione
+- **Time Picker**: ✅ Con gestione opzionale
+- **Location Picker**: ✅ Con timezone detection
+- **Form Validation**: ✅ Con error messages
+- **Task.readme.md**: ✅ Aggiornato con dettagli implementazione
+
+## Istruzioni Testing
+
+### Esecuzione Test
+```bash
+# Test componenti onboarding
+npm test -- --testPathPatterns="OnboardingScreen|DatePicker|TimePicker|LocationPicker"
+
+# Test validazione form
+npm test -- --testPathPatterns="validation.test.ts"
+
+# Type checking
+npm run type-check
+```
+
+### Testing Manuale
+1. **Onboarding Flow**: Testare flusso completo da apertura a submit
+2. **Date Selection**: Testare selezione date passate/future
+3. **Time Handling**: Testare toggle ora sconosciuta
+4. **Location Search**: Testare ricerca città e GPS
+5. **Error States**: Testare validazione e recovery errori
+
+## Prossimi Passi
+- **Task 4.2**: Implementazione workflow creazione profilo
+- **Task 4.3**: Schermata visualizzazione profilo
+- **Integration**: Collegamento con sistema astrology esistente
+
+## Status
+✅ **COMPLETATO** - Sistema completo input dettagli nascita con validazione, gestione errori e design system coerente

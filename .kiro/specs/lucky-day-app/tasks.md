@@ -61,7 +61,7 @@
     - _Requirements: 12.1, 12.2_
 
 - [ ] 4. Create onboarding flow and profile management
-  - [ ] 4.1 Build birth details input screens
+  - [x] 4.1 Build birth details input screens
     - Create date picker for birth date
     - Add time picker with optional handling
     - Implement location picker with timezone detection
