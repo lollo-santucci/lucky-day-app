@@ -689,248 +689,6 @@ npm run type-check
 
 ---
 
-## Sistema di Design Centralizzato - Miglioramento Architetturale
-
-## Descrizione Miglioramento
-Durante l'implementazione del Task 4.1, è emersa la necessità di centralizzare il sistema di styling per migliorare la manutenibilità e consistenza del codice. Ho implementato un sistema di design completo che risolve i problemi di stili sparsi nel codice.
-
-## Problema Identificato
-**Prima dell'implementazione:**
-- Stili duplicati e inconsistenti tra componenti
-- Colori e spacing hardcoded in ogni file
-- Difficoltà nel mantenere coerenza visiva
-- Impossibilità di fare cambiamenti globali facilmente
-
-```typescript
-// Esempio del problema - stili sparsi
-const styles = StyleSheet.create({
-  submitButton: { backgroundColor: '#B83330', paddingVertical: 16, ... },
-  sectionTitle: { fontSize: 18, fontWeight: '600', color: '#222222', ... },
-});
-```
-
-## Soluzione Implementata
-
-### 1. Sistema di Design Tokens (`src/styles/theme.ts`)
-```typescript
-export const theme = {
-  colors: {
-    primary: '#B83330',      // Jade Red
-    background: '#FAF6F0',   // Paper Ivory
-    surface: '#FFFFFF',      // White
-    text: '#222222',         // Ink Black
-    accent: '#F2C879',       // Soft Gold
-    // ... semantic e neutral colors
-  },
-  typography: {
-    fontSize: { xs: 10, sm: 12, base: 14, md: 16, lg: 18, xl: 20, '2xl': 24, '3xl': 28 },
-    fontWeight: { light: '300', normal: '400', medium: '500', semibold: '600', bold: '700' },
-    lineHeight: { tight: 1.2, normal: 1.4, relaxed: 1.6, loose: 1.8 },
-  },
-  spacing: { xs: 4, sm: 8, md: 12, base: 16, lg: 20, xl: 24, '2xl': 32, '3xl': 40 },
-  borderRadius: { none: 0, sm: 4, base: 8, md: 12, lg: 16, xl: 20, full: 9999 },
-  shadows: { sm: {...}, md: {...}, lg: {...} },
-}
-```
-
-### 2. Componenti Stilizzati Riutilizzabili (`src/styles/components.ts`)
-```typescript
-export const componentStyles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.background },
-  button: { backgroundColor: theme.colors.primary, ... },
-  input: { backgroundColor: theme.colors.surface, ... },
-  sectionTitle: { fontSize: theme.typography.fontSize.lg, ... },
-  // ... 30+ stili riutilizzabili
-});
-
-// Helper functions per stili dinamici
-export const createButtonStyle = (variant, disabled) => [...]
-export const createInputStyle = (hasError, isFocused) => [...]
-```
-
-### 3. Componenti UI Riutilizzabili
-
-#### Button Component (`src/components/Button.tsx`)
-```typescript
-interface ButtonProps extends TouchableOpacityProps {
-  title: string;
-  variant?: 'primary' | 'secondary';
-  size?: 'small' | 'medium' | 'large';
-  loading?: boolean;
-  disabled?: boolean;
-}
-
-// Utilizzo: <Button title="Submit" variant="primary" size="large" />
-```
-
-#### Input Component (`src/components/Input.tsx`)
-```typescript
-interface InputProps extends TextInputProps {
-  label?: string;
-  error?: string;
-  helperText?: string;
-  required?: boolean;
-}
-
-// Utilizzo: <Input label="Email" error="Campo richiesto" required />
-```
-
-### 4. Refactoring Componenti Esistenti
-
-**Prima:**
-```typescript
-const styles = StyleSheet.create({
-  submitButton: {
-    backgroundColor: '#B83330',
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 24,
-    marginBottom: 16,
-  },
-});
-
-<TouchableOpacity style={styles.submitButton}>
-  <Text style={styles.submitButtonText}>Submit</Text>
-</TouchableOpacity>
-```
-
-**Dopo:**
-```typescript
-import { Button } from './Button';
-import { theme } from '../styles/index';
-
-<Button
-  title="Submit"
-  size="large"
-  style={{ marginTop: theme.spacing.xl }}
-/>
-```
-
-## Benefici Ottenuti
-
-### 1. **Single Source of Truth**
-- Tutti i design tokens in `src/styles/theme.ts`
-- Cambiare `theme.colors.primary` aggiorna tutti i bottoni
-- Consistenza garantita in tutta l'app
-
-### 2. **Type Safety Completa**
-```typescript
-export type ThemeColors = keyof typeof theme.colors;
-export type ThemeFontSizes = keyof typeof theme.typography.fontSize;
-export type ThemeSpacing = keyof typeof theme.spacing;
-```
-
-### 3. **Performance Ottimizzata**
-- Utilizzo di `StyleSheet.create()` per performance native
-- Stili pre-compilati e cachati
-- Riduzione del bundle size
-
-### 4. **Accessibilità Integrata**
-- Touch targets minimi garantiti (44px iOS / 48dp Android)
-- Contrasti colori verificati
-- Font sizes leggibili (min 12px)
-
-### 5. **Manutenibilità Migliorata**
-- Modifiche globali con un solo cambiamento
-- Componenti riutilizzabili e testabili
-- Codice più pulito e leggibile
-
-## Test del Sistema di Design
-
-### Test Automatizzati (21 test passano ✅)
-```bash
-npm test -- --testPathPatterns="theme" --watchAll=false
-```
-
-**Categorie testate:**
-- ✅ Consistenza colori e typography
-- ✅ Scala spacing matematicamente corretta
-- ✅ Accessibilità (touch targets, contrasti)
-- ✅ Performance e type safety
-- ✅ Design system consistency
-
-### Correzioni Import TypeScript
-**Problema risolto:** Errori `Cannot find module '../styles'`
-
-**Soluzione:** Import espliciti per migliore risoluzione TypeScript
-```typescript
-// Prima: import { theme } from '../styles';
-// Dopo:  import { theme } from '../styles/index';
-```
-
-**File corretti:**
-- ✅ `Button.tsx` - Import esplicito per styles
-- ✅ `BirthDetailsForm.tsx` - Aggiunto import mancante
-- ✅ `Input.tsx` - Import esplicito per styles
-
-## Struttura File Sistema di Design
-
-```
-src/styles/
-├── theme.ts          # Design tokens (colori, typography, spacing)
-├── components.ts     # Stili componenti riutilizzabili
-├── index.ts          # Export centralizzato
-└── __tests__/
-    └── theme.test.ts # Test sistema di design (21 test)
-```
-
-## Utilizzo per Sviluppatori
-
-### Import Centralizzato
-```typescript
-import { theme, componentStyles, Button, Input } from '../styles/index';
-```
-
-### Esempi Pratici
-```typescript
-// Colori
-backgroundColor: theme.colors.primary
-color: theme.colors.text
-
-// Spacing
-marginTop: theme.spacing.xl
-padding: theme.spacing.base
-
-// Typography
-fontSize: theme.typography.fontSize.lg
-fontWeight: theme.typography.fontWeight.semibold
-
-// Componenti
-<Button title="Salva" variant="primary" size="large" />
-<Input label="Email" required error="Campo obbligatorio" />
-```
-
-## Conformità Requisiti Design System
-
-### Requirement 8.1 ✅
-- **UI Consistente**: Sistema di design tokens centralizzato
-- **Brand Colors**: Jade Red, Paper Ivory, Ink Black, Soft Gold
-- **Typography Scale**: 8 dimensioni da xs (10px) a 3xl (28px)
-
-### Requirement 8.2 ✅
-- **Responsive Design**: Spacing scale basata su unità 4px
-- **Touch Targets**: Minimi 44px garantiti
-- **Accessibilità**: Contrasti e font sizes verificati
-
-### Task Details ✅
-- **Centralized Styling**: ✅ Sistema completo implementato
-- **Reusable Components**: ✅ Button, Input con variants
-- **Type Safety**: ✅ TypeScript types per tutti i tokens
-- **Performance**: ✅ StyleSheet.create e ottimizzazioni
-
-## Prossimi Passi Design System
-
-1. **UI Library Integration**: Aggiungere React Native Elements
-2. **Dark Mode**: Estendere theme per supporto dark mode
-3. **Animation Tokens**: Aggiungere durations e easing
-4. **Responsive Breakpoints**: Sistema per tablet/desktop
-5. **Component Library**: Espandere con Card, Modal, etc.
-
-## Status Sistema di Design
-✅ **COMPLETATO** - Sistema di design centralizzato implementato con 21 test passanti, type safety completa e componenti riutilizzabili
-
 # Task 4.2: Implement Profile Creation Workflow
 
 ## Descrizione Task
@@ -1867,6 +1625,294 @@ npm test -- --coverage OnboardingScreen.integration.test.tsx
 - **Test Maintenance**: Bilanciamento tra copertura completa e manutenibilità test
 
 Il sistema di test integrazione fornisce una base solida per verificare la qualità e affidabilità del flusso di onboarding, garantendo che tutti i componenti lavorino insieme correttamente per creare un'esperienza utente fluida e robusta.
+
+---
+
+# Task 5.1: Create LLM API Integration Service
+
+## Descrizione Task
+Ho implementato un servizio completo di integrazione LLM per la generazione di fortune personalizzate, con gestione timeout di 5 secondi, error handling robusto e prompt engineering specifico per l'astrologia cinese.
+
+## Cosa è stato implementato
+
+### 1. Servizio LLM Avanzato (`src/services/llm.ts`)
+- **Timeout Management**: Implementazione timeout 5 secondi come richiesto (Requirement 2.5)
+- **Error Handling Tipizzato**: Sistema errori con enum `LLMErrorType` per gestione specifica
+- **Fortune Generation**: Metodo specializzato per generazione fortune personalizzate
+- **Privacy Protection**: Sintesi dati astrologici senza trasmissione informazioni personali
+
+### 2. Sistema Error Handling Robusto
+```typescript
+export enum LLMErrorType {
+  TIMEOUT = 'TIMEOUT',
+  NETWORK = 'NETWORK', 
+  API_KEY = 'API_KEY',
+  RATE_LIMIT = 'RATE_LIMIT',
+  INVALID_RESPONSE = 'INVALID_RESPONSE',
+  UNKNOWN = 'UNKNOWN'
+}
+
+export class LLMError extends Error {
+  constructor(
+    public type: LLMErrorType,
+    message: string,
+    public originalError?: Error
+  ) {
+    super(message);
+    this.name = 'LLMError';
+  }
+}
+```
+
+### 3. Timeout Implementation con Promise.race()
+```typescript
+// Timeout promise che compete con API call
+const timeoutPromise = new Promise<never>((_, reject) => {
+  setTimeout(() => {
+    reject(new LLMError(LLMErrorType.TIMEOUT, `Request timed out after ${this.config.timeout}ms`));
+  }, this.config.timeout);
+});
+
+// Race tra API call e timeout
+const completion = await Promise.race([apiPromise, timeoutPromise]);
+```
+
+### 4. Fortune Generation Personalizzata
+- **Prompt Engineering**: Prompts specifici per astrologia cinese con tono mistico
+- **Character Limit**: Gestione limite 200 caratteri con troncamento intelligente
+- **Privacy Safe**: Sintesi Four Pillars senza dati personali di nascita
+- **Previous Fortunes**: Evita ripetizioni considerando fortune precedenti
+
+#### Esempio Prompt System
+```typescript
+const systemPrompt = `You are a wise Chinese fortune teller creating daily fortunes. Your messages should be:
+- Reflective, witty, calm, and slightly mystical in tone
+- Maximum 200 characters including spaces
+- Positive and inspiring, focusing on opportunities and wisdom
+- Authentic to traditional Chinese fortune cookie wisdom
+- Personalized but not overly specific
+
+Never mention personal details, only astrological qualities and universal wisdom.`;
+```
+
+### 5. Pillar Essence Synthesis (Privacy Protection)
+```typescript
+private synthesizePillarEssence(profile: AstrologicalProfile): string {
+  const { pillars } = profile;
+  const elements = [pillars.year.element, pillars.month.element, pillars.day.element, pillars.hour.element];
+  const dominantElement = this.findDominantElement(elements);
+  const yearQuality = this.getElementQuality(pillars.year.element);
+  const dayQuality = this.getElementQuality(pillars.day.element);
+  
+  return `${dominantElement}-influenced with ${yearQuality} destiny and ${dayQuality} essence`;
+}
+```
+
+### 6. Intelligent Text Truncation
+```typescript
+// Ensure message is within character limit
+let fortune = response.content.trim();
+if (fortune.length > 200) {
+  // Find last complete sentence within limit
+  const truncated = fortune.substring(0, 197);
+  const lastPeriod = truncated.lastIndexOf('.');
+  const lastExclamation = truncated.lastIndexOf('!');
+  const lastSentenceEnd = Math.max(lastPeriod, lastExclamation);
+  
+  if (lastSentenceEnd > 100) {
+    fortune = fortune.substring(0, lastSentenceEnd + 1);
+  } else {
+    fortune = truncated + '...';
+  }
+}
+```
+
+### 7. Comprehensive Error Classification
+- **TIMEOUT**: Richieste che superano 5 secondi
+- **NETWORK**: Errori di connessione (ENOTFOUND, ECONNREFUSED, ETIMEDOUT)
+- **API_KEY**: Errori autenticazione (401, 403)
+- **RATE_LIMIT**: Limite rate exceeded (429)
+- **INVALID_RESPONSE**: Risposta vuota o malformata
+- **UNKNOWN**: Altri errori non classificati
+
+## Test Results
+✅ **22 test totali passano** con copertura completa
+- **Configurazione**: Test inizializzazione con/senza API key
+- **Timeout Handling**: Test timeout 5 secondi con Promise.race
+- **Error Classification**: Test per tutti i tipi di errore LLM
+- **Fortune Generation**: Test generazione personalizzata con character limit
+- **Privacy Protection**: Test sintesi pillar essence senza dati personali
+- **Text Truncation**: Test troncamento intelligente per risposte lunghe
+
+### Esempi Test Critici
+
+#### Test Timeout 5 Secondi
+```typescript
+test('handles timeout errors', async () => {
+  mockCreate.mockImplementation(() => 
+    new Promise(resolve => setTimeout(resolve, 6000))
+  );
+
+  const service = new LLMService({ apiKey: 'test-key', timeout: 100 });
+
+  try {
+    await service.generateContent({
+      systemPrompt: 'Test',
+      userPrompt: 'Test'
+    });
+  } catch (error) {
+    expect(error).toBeInstanceOf(LLMError);
+    expect((error as LLMError).type).toBe(LLMErrorType.TIMEOUT);
+  }
+});
+```
+
+#### Test Fortune Generation
+```typescript
+test('generateFortune creates personalized fortune within character limit', async () => {
+  const service = new LLMService({ apiKey: 'test-key' });
+  const fortune = await service.generateFortune(mockProfile);
+
+  expect(fortune).toBeDefined();
+  expect(fortune.length).toBeLessThanOrEqual(200);
+  expect(mockCreate).toHaveBeenCalledWith(
+    expect.objectContaining({
+      messages: expect.arrayContaining([
+        expect.objectContaining({
+          role: 'system',
+          content: expect.stringContaining('wise Chinese fortune teller')
+        }),
+        expect.objectContaining({
+          role: 'user', 
+          content: expect.stringContaining('dragon')
+        })
+      ]),
+      max_tokens: 60,
+      temperature: 0.8
+    })
+  );
+});
+```
+
+#### Test Privacy Protection
+```typescript
+test('generateFortune synthesizes pillar essence without personal data', async () => {
+  const service = new LLMService({ apiKey: 'test-key' });
+  await service.generateFortune(mockProfile);
+
+  const userPrompt = mockCreate.mock.calls[0][0].messages[1].content;
+  
+  // Should contain synthesized essence, not raw birth data
+  expect(userPrompt).toContain('earth-influenced');
+  expect(userPrompt).toContain('dragon');
+  expect(userPrompt).toContain('fire element');
+  
+  // Should not contain specific stems/branches or personal details
+  expect(userPrompt).not.toContain('Geng');
+  expect(userPrompt).not.toContain('Chen');
+});
+```
+
+## Conformità ai Requisiti
+
+### Requirement 2.1 ✅
+- **Personalized Fortunes**: Utilizzo profilo astrologico come input per LLM
+- **Astrological Context**: Sintesi zodiac sign e Four Pillars per personalizzazione
+
+### Requirement 2.2 ✅  
+- **200 Character Limit**: Gestione limite con troncamento intelligente
+- **Tone Requirements**: Prompt engineering per tono reflective, witty, calm, mystical
+
+### Requirement 2.5 ✅
+- **5 Second Timeout**: Implementazione timeout con Promise.race()
+- **Fallback Ready**: Struttura pronta per fallback quando timeout scade
+
+### Task Details ✅
+- **API Client**: ✅ Client OpenAI con configurazione flessibile
+- **Request/Response Handling**: ✅ Gestione completa con error management
+- **Timeout Handling**: ✅ 5 secondi con Promise.race implementation
+- **Prompt Engineering**: ✅ Prompts specifici per fortune personalizzate
+- **Task.readme.md**: ✅ Aggiornato con dettagli implementazione e testing
+
+## Configurazione e Setup
+
+### Environment Variables
+```bash
+# .env file
+EXPO_PUBLIC_OPENAI_API_KEY=your_openai_api_key_here
+EXPO_PUBLIC_OPENAI_MODEL=gpt-4o  # Optional, defaults to gpt-4o
+```
+
+### Utilizzo del Servizio
+```typescript
+import { llmService } from '@/services/llm';
+
+// Generazione fortune personalizzata
+try {
+  const fortune = await llmService.generateFortune(astrologicalProfile, previousFortunes);
+  console.log('Generated fortune:', fortune);
+} catch (error) {
+  if (error instanceof LLMError) {
+    switch (error.type) {
+      case LLMErrorType.TIMEOUT:
+        // Use fallback fortune system
+        break;
+      case LLMErrorType.NETWORK:
+        // Show offline mode
+        break;
+      // Handle other error types...
+    }
+  }
+}
+```
+
+## Istruzioni Testing
+
+### Esecuzione Test
+```bash
+# Test completi LLM service
+npm test src/services/__tests__/llm.test.ts
+
+# Test specifici timeout
+npm test -- --testNamePattern="timeout"
+
+# Test fortune generation
+npm test -- --testNamePattern="Fortune Generation"
+```
+
+### Testing con API Reale
+```bash
+# Set API key in .env
+EXPO_PUBLIC_OPENAI_API_KEY=your_real_key
+
+# Run integration tests
+npm test -- --testNamePattern="integration" --testTimeout=10000
+```
+
+## Architettura e Design Patterns
+
+### Singleton Pattern
+- **llmService**: Istanza singleton per uso globale nell'app
+- **Configuration**: Configurazione centralizzata da environment variables
+
+### Error Handling Strategy
+- **Typed Errors**: Enum per classificazione errori specifici
+- **Graceful Degradation**: Preparazione per fallback system
+- **Logging**: Console warnings per debugging senza crash app
+
+### Privacy by Design
+- **Data Synthesis**: Trasformazione dati astrologici in descrizioni generiche
+- **No Personal Data**: Mai trasmissione date/ore/coordinate di nascita
+- **Anonimization**: Solo qualità astrologiche sintetizzate inviate a LLM
+
+## Prossimi Passi
+- **Task 5.2**: Implementazione fortune caching e cooldown logic
+- **Task 5.3**: Sistema fallback fortune per scenari offline
+- **Integration**: Collegamento con fortune manager e UI components
+
+## Status
+✅ **COMPLETATO** - Servizio LLM completo con timeout 5 secondi, error handling robusto e prompt engineering per fortune personalizzate
+
 ---
 
 

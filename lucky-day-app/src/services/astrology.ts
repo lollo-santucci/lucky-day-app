@@ -122,42 +122,8 @@ export async function generateMysticalNickname(zodiac: ChineseZodiac): Promise<s
   try {
     // Use centralized LLM service with astrology-specific prompts
     if (llmService.isServiceAvailable()) {
-      const systemPrompt = "You are a mystical Chinese astrology expert who creates personalized nicknames. Always respond with exactly 2 words: an adjective followed by the zodiac animal.";
-
-      const userPrompt = `Generate a mystical nickname for someone born in the Chinese zodiac year of the ${zodiac.animal} with the element ${zodiac.element}. 
-
-Requirements:
-- Must be exactly 2 words in English
-- First word: a positive adjective that reflects personality or mystical qualities
-- Second word: "${zodiac.animal.charAt(0).toUpperCase() + zodiac.animal.slice(1)}" (the zodiac animal, capitalized)
-- Examples: "Generous Pig", "Wise Dragon", "Brave Tiger", "Serene Snake"
-- Should feel mystical and positive
-- Consider the element ${zodiac.element} for inspiration but don't be limited by it
-
-Return only the 2-word nickname, nothing else.`;
-
-      const response = await llmService.generateContent({
-        systemPrompt,
-        userPrompt,
-        maxTokens: 10,
-        temperature: 0.7
-      });
-
-      // Validate the format (should be "Adjective Animal")
-      const words = response.content.split(' ');
-      if (words.length !== 2) {
-        throw new Error(`Invalid nickname format: ${response.content}`);
-      }
-
-      const [adjective, animalName] = words;
-      const expectedAnimal = zodiac.animal.charAt(0).toUpperCase() + zodiac.animal.slice(1);
-
-      if (animalName !== expectedAnimal) {
-        // If LLM didn't use the correct animal, fix it
-        return `${adjective} ${expectedAnimal}`;
-      }
-
-      return response.content;
+      const nickname = await llmService.generateMysticalNickname(zodiac);
+      return nickname;
     } else {
       console.warn('LLM service not available, using fallback');
       return generateFallbackNickname(zodiac);
@@ -424,42 +390,7 @@ export async function generatePillarDescriptions(pillars: FourPillars): Promise<
   try {
     // Use centralized LLM service for creative descriptions
     if (llmService.isServiceAvailable()) {
-      const systemPrompt = "You are a mystical Chinese astrology expert who creates poetic, meaningful descriptions for the Four Pillars of Destiny (Ba Zi). Each pillar represents a different aspect of a person's destiny and should be described in a mystical, reflective tone.";
-
-      const userPrompt = `Generate poetic descriptions for the Four Pillars of Destiny based on these stem-branch combinations:
-
-Year Pillar (Destiny): ${pillars.year.stem}${pillars.year.branch} (${pillars.year.element})
-Month Pillar (Environment): ${pillars.month.stem}${pillars.month.branch} (${pillars.month.element})
-Day Pillar (Essence): ${pillars.day.stem}${pillars.day.branch} (${pillars.day.element})
-Hour Pillar (Inner Heart): ${pillars.hour.stem}${pillars.hour.branch} (${pillars.hour.element})
-
-Requirements:
-- Each description should be 1-2 sentences
-- Use mystical, poetic language that feels authentic to Chinese philosophy
-- Focus on the meaning and energy of each pillar's role:
-  * Year Pillar: Overall destiny and life path
-  * Month Pillar: Environment and relationships
-  * Day Pillar: Core essence and personality
-  * Hour Pillar: Inner heart and spiritual nature
-- Consider the elements and their interactions
-- Keep descriptions positive and meaningful
-- Write in English
-
-Format your response as:
-Year: [description]
-Month: [description]
-Day: [description]
-Hour: [description]`;
-
-      const response = await llmService.generateContent({
-        systemPrompt,
-        userPrompt,
-        maxTokens: 300,
-        temperature: 0.8
-      });
-
-      // Parse the response to extract individual descriptions
-      const descriptions = parsePillarDescriptions(response.content);
+      const descriptions = await llmService.generatePillarDescriptions(pillars);
       return descriptions;
     } else {
       console.warn('LLM service not available, using fallback');
@@ -471,34 +402,7 @@ Hour: [description]`;
   }
 }
 
-/**
- * Parses LLM response to extract pillar descriptions
- */
-function parsePillarDescriptions(response: string): PillarDescriptions {
-  const lines = response.split('\n').filter(line => line.trim());
-  const descriptions: Partial<PillarDescriptions> = {};
 
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (trimmed.startsWith('Year:')) {
-      descriptions.year = trimmed.substring(5).trim();
-    } else if (trimmed.startsWith('Month:')) {
-      descriptions.month = trimmed.substring(6).trim();
-    } else if (trimmed.startsWith('Day:')) {
-      descriptions.day = trimmed.substring(4).trim();
-    } else if (trimmed.startsWith('Hour:')) {
-      descriptions.hour = trimmed.substring(5).trim();
-    }
-  }
-
-  // Ensure all descriptions are present, use fallback if missing
-  return {
-    year: descriptions.year || 'Your destiny flows like a river, shaped by ancient wisdom and future possibilities.',
-    month: descriptions.month || 'Your environment nurtures growth, like fertile soil beneath the changing seasons.',
-    day: descriptions.day || 'Your essence shines with unique light, a star in the constellation of being.',
-    hour: descriptions.hour || 'Your inner heart beats with the rhythm of the cosmos, deep and eternal.'
-  };
-}
 
 /**
  * Fallback pillar descriptions when LLM is unavailable
@@ -557,49 +461,8 @@ export async function generateEssenceSummary(zodiac: ChineseZodiac, pillars: Fou
   try {
     // Use centralized LLM service for creative summary
     if (llmService.isServiceAvailable()) {
-      const systemPrompt = "You are a mystical Chinese astrology expert who creates beautiful, poetic essence summaries. Create exactly 3 lines that capture the spiritual essence of a person based on their zodiac and Four Pillars.";
-
-      const userPrompt = `Create a 3-line zodiac essence summary for someone with:
-
-Zodiac: ${zodiac.element} ${zodiac.animal} (${zodiac.year})
-Four Pillars: 
-- Year: ${pillars.year.stem}${pillars.year.branch} (${pillars.year.element})
-- Month: ${pillars.month.stem}${pillars.month.branch} (${pillars.month.element})
-- Day: ${pillars.day.stem}${pillars.day.branch} (${pillars.day.element})
-- Hour: ${pillars.hour.stem}${pillars.hour.branch} (${pillars.hour.element})
-
-Requirements:
-- Exactly 3 lines, each line should be poetic and meaningful
-- Incorporate the zodiac animal and element naturally
-- Reference the interplay of the pillar elements
-- Use mystical, beautiful language that feels authentic to Chinese philosophy
-- Each line should flow into the next, creating a cohesive spiritual portrait
-- Keep it positive and inspiring
-- Write in English
-
-Example format:
-Born under the [element] [animal], you carry the wisdom of [concept]
-Your pillars dance between [elements], creating harmony in [aspect]
-In your heart flows the eternal [metaphor], guiding you toward [destiny]`;
-
-      const response = await llmService.generateContent({
-        systemPrompt,
-        userPrompt,
-        maxTokens: 150,
-        temperature: 0.9
-      });
-
-      // Clean up the response and ensure it's exactly 3 lines
-      const lines = response.content.split('\n')
-        .map(line => line.trim())
-        .filter(line => line.length > 0);
-
-      if (lines.length >= 3) {
-        return lines.slice(0, 3).join('\n');
-      } else {
-        // If LLM didn't provide 3 lines, use fallback
-        return generateFallbackEssenceSummary(zodiac, pillars);
-      }
+      const summary = await llmService.generateEssenceSummary(zodiac, pillars);
+      return summary;
     } else {
       console.warn('LLM service not available, using fallback');
       return generateFallbackEssenceSummary(zodiac, pillars);

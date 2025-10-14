@@ -3,6 +3,9 @@
  * Configures global test environment and mocks
  */
 
+// Polyfill fetch for OpenAI client in test environment
+global.fetch = require('whatwg-fetch').fetch;
+
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () => require('./__mocks__/asyncStorage.js'));
 

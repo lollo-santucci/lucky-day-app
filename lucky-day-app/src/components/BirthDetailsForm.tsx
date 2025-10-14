@@ -11,12 +11,13 @@ import { DatePicker } from './DatePicker';
 import { TimePicker } from './TimePicker';
 import { LocationPicker } from './LocationPicker';
 import { validateBirthDetails } from '../types/validation';
-import { componentStyles, theme } from '../styles/index';
+
 
 interface BirthDetailsFormProps {
   onSubmit: (birthDetails: BirthDetails) => void;
   onCancel?: () => void;
   isLoading?: boolean;
+  isSubmitting?: boolean;
   submitButtonText?: string;
   initialValues?: BirthDetails;
 }
@@ -25,6 +26,7 @@ export const BirthDetailsForm: React.FC<BirthDetailsFormProps> = ({
   onSubmit,
   onCancel,
   isLoading = false,
+  isSubmitting = false,
   submitButtonText = 'Create My Profile',
   initialValues,
 }) => {
@@ -134,12 +136,12 @@ export const BirthDetailsForm: React.FC<BirthDetailsFormProps> = ({
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity
-          style={[styles.submitButton, isLoading && styles.submitButtonDisabled]}
+          style={[styles.submitButton, (isLoading || isSubmitting) && styles.submitButtonDisabled]}
           onPress={handleSubmit}
-          disabled={isLoading}
+          disabled={isLoading || isSubmitting}
         >
           <Text style={styles.submitButtonText}>
-            {isLoading ? 'Processing...' : submitButtonText}
+            {(isLoading || isSubmitting) ? 'Processing...' : submitButtonText}
           </Text>
         </TouchableOpacity>
         
@@ -147,7 +149,7 @@ export const BirthDetailsForm: React.FC<BirthDetailsFormProps> = ({
           <TouchableOpacity
             style={styles.cancelButton}
             onPress={onCancel}
-            disabled={isLoading}
+            disabled={isLoading || isSubmitting}
           >
             <Text style={styles.cancelButtonText}>Cancel</Text>
           </TouchableOpacity>
