@@ -10,10 +10,14 @@ module.exports = {
     '**/*.(test|spec).+(ts|tsx|js)'
   ],
   transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest',
+    '^.+\\.(ts|tsx)$': ['ts-jest', {
+      tsconfig: {
+        jsx: 'react-jsx',
+      },
+    }],
   },
   moduleNameMapper: {
-    '^react-native$': 'react-native-web',
+    '^react-native$': '<rootDir>/src/__mocks__/react-native.js',
   },
   transformIgnorePatterns: [
     'node_modules/(?!(react-native|@react-native|react-native-.*)/)',
