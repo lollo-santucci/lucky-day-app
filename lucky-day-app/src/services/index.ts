@@ -12,3 +12,11 @@ export {
 export { llmService, LLMService } from './llm';
 
 export { ProfileManager, ProfileCreationError } from './profileManager';
+
+export { 
+  FortuneManager, 
+  FortuneManagerError, 
+  FortuneManagerErrorType,
+  fortuneManager,
+  type FortuneState 
+} from './fortuneManager';

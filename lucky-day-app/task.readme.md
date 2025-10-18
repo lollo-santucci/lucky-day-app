@@ -1963,4 +1963,206 @@ Tests:       18 passed, 18 total
 5. **Requirements Compliance**: All requirements (12.1, 12.4) verified through integration tests
 6. **Performance Validation**: Tests complete in under 2.2 seconds with realistic data
 
-The integration tests successfully demonstrate that the onboarding flow works end-to-end, from birth details input through profile creation, validation, and storage, with comprehensive error handling and recovery capabilities.
+The integration tests successfully demonstrate that the onboarding flow works end-to-end, from birth details input through profile creation, validation, and storage, with comprehensive error handling and recovery capabilities.#
+ Task 5.2: Implement Fortune Caching and Cooldown Logic
+
+## Task Description
+Implemented comprehensive fortune caching and 24-hour cooldown mechanism to manage daily fortune generation, including local caching, expiration handling, and last generation time tracking.
+
+## What was implemented
+
+### 1. Fortune Manager Service (`src/services/fortuneManager.ts`)
+- **Singleton Pattern**: Centralized fortune management with single instance
+- **Daily 8am Reset**: Fortune availability resets every day at 8am local time
+- **Local Caching**: Stores fortunes locally with automatic expiration
+- **Fallback System**: Uses pre-written fortunes when LLM fails
+- **State Management**: Tracks current fortune, generation time, and availability
+
+### 2. Core Features Implemented
+
+#### Fortune Generation with Daily Reset
+```typescript
+// Check if new fortune can be generated (resets at 8am daily)
+canGenerateNewFortune(): boolean
+// Generate fortune with profile personalization
+generateFortune(profile: AstrologicalProfile): Promise<Fortune>
+// Force refresh bypassing daily limit (for testing)
+forceRefreshFortune(profile: AstrologicalProfile): Promise<Fortune>
+```
+
+#### Caching and Expiration
+```typescript
+// Get cached fortune if available and not expired
+getCachedFortune(): Fortune | null
+// Clear expired fortunes automatically
+private clearExpiredFortune(): Promise<void>
+// Cache fortune to local storage
+private cacheFortune(fortune: Fortune): Promise<void>
+```
+
+#### Time Management
+```typescript
+// Get time until next 8am local time (milliseconds)
+getTimeUntilNextFortune(): number
+// Get formatted time display (e.g., "13h 45m until 8am")
+getFormattedTimeUntilNext(): string
+// Check if fortune is expired (expires at 8am next day)
+private isFortuneExpired(fortune: Fortune): boolean
+```
+
+#### Daily Reset Logic (`src/types/fortune.ts`)
+```typescript
+// Calculate next 8am local time
+getNext8amLocalTime(currentDate?: Date): Date
+// Check if fortune can be generated today (8am reset logic)
+canGenerateFortuneToday(currentDate?: Date, lastFortuneDate?: Date): boolean
+// Calculate fortune expiration (8am next day local time)
+calculateFortuneExpiration(generatedAt: Date): Date
+```
+
+### 3. Fallback Fortune System
+- **10 Pre-written Fortunes**: Authentic Chinese-inspired messages
+- **Decorative Elements**: Each fallback includes ideogram and signature
+- **Automatic Fallback**: Seamlessly switches when LLM unavailable
+- **"Fortuna Artigianale" Banner**: Indicates fallback mode usage
+
+### 4. Error Handling and Types
+```typescript
+enum FortuneManagerErrorType {
+  COOLDOWN_ACTIVE,    // 24-hour cooldown still active
+  NO_PROFILE,         // Missing astrological profile
+  GENERATION_FAILED,  // Fortune generation error
+  CACHE_ERROR,        // Storage caching error
+  STORAGE_ERROR       // General storage error
+}
+```
+
+### 5. Fortune State Interface
+```typescript
+interface FortuneState {
+  currentFortune: Fortune | null;     // Current cached fortune
+  lastFortuneDate: Date | null;       // When last generated
+  canGenerateNew: boolean;            // Cooldown status
+  timeUntilNext: number;              // Milliseconds until available
+}
+```
+
+### 6. Integration with App State
+- **Automatic Initialization**: Loads cached data on startup
+- **App State Updates**: Tracks fortune generation in analytics
+- **Storage Integration**: Uses existing AppStorage utilities
+- **Profile Integration**: Works with astrological profiles
+
+## Testing Implementation
+
+### Comprehensive Test Suite (`src/services/__tests__/fortuneManager.test.ts`)
+- **20 Test Cases**: Cover all major functionality
+- **Mocked Dependencies**: Isolated testing with proper mocks
+- **Edge Cases**: Expired fortunes, storage errors, LLM failures
+- **Cooldown Logic**: Validates 24-hour restriction enforcement
+- **Caching Behavior**: Tests storage and retrieval operations
+
+### Test Categories
+1. **Initialization Tests**: Empty state, cached data loading, expired cleanup
+2. **Daily Reset Logic Tests**: 8am reset mechanism, time calculations
+3. **Caching Tests**: Storage operations, expiration handling
+4. **Fallback Tests**: LLM failure scenarios, fallback selection
+5. **Error Handling Tests**: Invalid inputs, storage failures
+6. **State Management Tests**: Fortune state tracking, updates
+7. **8am Reset Logic Tests**: Daily boundary conditions, timezone handling
+
+## Requirements Fulfilled
+
+### Requirement 1.4 (Daily Fortune Limit)
+✅ **WHEN a fortune has been revealed THEN the system SHALL prevent opening another cookie until 8am next day**
+- Implemented daily reset at 8am local time
+- Tracks last generation time with millisecond precision
+- Prevents new generation until next 8am local time
+
+### Requirement 1.5 (Automatic Daily Regeneration)
+✅ **WHEN 8am arrives THEN the system SHALL automatically allow generation of a new fortune**
+- Automatic daily reset detection at 8am local time
+- Clears expired fortunes and allows new generation
+- Seamless transition from expired to available state
+
+### Requirement 7.1 (Local Caching)
+✅ **WHEN fortune is generated THEN the system SHALL cache it locally until 8am next day**
+- Comprehensive local storage integration
+- Encrypted storage for sensitive data
+- Automatic cache cleanup and expiration handling at 8am daily
+
+## Usage Examples
+
+### Basic Fortune Management
+```typescript
+import { fortuneManager } from '@/services';
+
+// Initialize on app startup
+await fortuneManager.initialize();
+
+// Check if new fortune can be generated
+const canGenerate = fortuneManager.canGenerateNewFortune();
+
+// Generate new fortune (if allowed)
+if (canGenerate) {
+  const fortune = await fortuneManager.generateFortune(userProfile);
+}
+
+// Get current cached fortune
+const cached = fortuneManager.getCachedFortune();
+
+// Get time until next fortune
+const timeLeft = fortuneManager.getFormattedTimeUntilNext();
+```
+
+### Fortune State Monitoring
+```typescript
+// Get complete fortune state
+const state = fortuneManager.getFortuneState();
+console.log({
+  hasFortune: !!state.currentFortune,
+  canGenerate: state.canGenerateNew,
+  timeUntilNext: state.timeUntilNext,
+  lastGenerated: state.lastFortuneDate
+});
+```
+
+## Testing Instructions
+
+### Run Fortune Manager Tests
+```bash
+# Run specific test suite
+npm test -- --testPathPatterns=fortuneManager.test.ts
+
+# Run with coverage
+npm test -- --testPathPatterns=fortuneManager.test.ts --coverage
+
+# Run in watch mode for development
+npm test -- --testPathPatterns=fortuneManager.test.ts --watch
+```
+
+### Manual Testing Scenarios
+1. **First Time User**: No cached fortune, should allow generation
+2. **Same Day Generation**: Generate fortune, verify daily limit prevents immediate regeneration
+3. **8am Reset**: Generate fortune, wait until next 8am, verify new generation allowed
+4. **Before 8am Generation**: Generate at 7am, check that new fortune available after 8am same day
+5. **After 8am Generation**: Generate at 10am, verify no new fortune until 8am next day
+6. **LLM Failure**: Disconnect internet, verify fallback fortune generation
+7. **Storage Errors**: Mock storage failures, verify graceful error handling
+
+### Integration Testing
+```typescript
+// Test with real profile data
+const profile = await profileManager.getProfile();
+const fortune = await fortuneManager.generateFortune(profile);
+
+// Verify fortune properties
+expect(fortune.message).toBeDefined();
+expect(fortune.source).toBeOneOf(['ai', 'fallback']);
+expect(fortune.expiresAt).toBeAfter(new Date());
+```
+
+## Status
+✅ **COMPLETED** - Fortune caching and cooldown logic fully implemented and tested
+
+---
