@@ -332,15 +332,44 @@ describe('FortuneManager', () => {
     });
   });
 
-  describe('Fallback Fortune Generation', () => {
-    it('should use fallback fortune when LLM fails', async () => {
+  describe('Connectivity Error Handling', () => {
+    it('should show Wi-Fi message when LLM fails', async () => {
       mockLlmService.generateFortune.mockRejectedValue(new Error('LLM failed'));
       
       const fortune = await fortuneManager.generateFortune(mockProfile);
       
-      expect(fortune.source).toBe('fallback');
-      expect(fortune.message).toBeDefined();
-      expect(fortune.decorativeElements.ideogram).toBeDefined();
+      expect(fortune.source).toBe('connectivity_error');
+      expect(fortune.message).toBe("Even fortune cookies need Wi-Fi. Come back when the stars (and your connection) align!");
+      expect(fortune.decorativeElements.ideogram).toBe("📶");
+      expect(fortune.decorativeElements.signature).toBe("Tech Support Oracle");
+    });
+
+    it('should allow retry after connectivity error', async () => {
+      // First call fails
+      mockLlmService.generateFortune.mockRejectedValueOnce(new Error('LLM failed'));
+      
+      const errorFortune = await fortuneManager.generateFortune(mockProfile);
+      expect(errorFortune.source).toBe('connectivity_error');
+      
+      // Should be able to try again immediately
+      expect(fortuneManager.canGenerateNewFortune()).toBe(true);
+      
+      // Second call succeeds
+      mockLlmService.generateFortune.mockResolvedValueOnce('Success message');
+      const successFortune = await fortuneManager.generateFortune(mockProfile);
+      expect(successFortune.source).toBe('ai');
+    });
+
+    it('should not consume daily fortune quota for connectivity errors', async () => {
+      mockLlmService.generateFortune.mockRejectedValue(new Error('LLM failed'));
+      
+      const errorFortune = await fortuneManager.generateFortune(mockProfile);
+      expect(errorFortune.source).toBe('connectivity_error');
+      
+      // Should not have updated lastFortuneDate
+      const state = fortuneManager.getFortuneState();
+      expect(state.lastFortuneDate).toBeNull();
+      expect(state.canGenerateNew).toBe(true);
     });
 
     it('should generate AI fortune when LLM succeeds', async () => {
@@ -351,6 +380,41 @@ describe('FortuneManager', () => {
         mockProfile,
         expect.any(Array)
       );
+    });
+
+  });
+
+  describe('Simplified Connectivity Handling', () => {
+    it('should provide connectivity error for any LLM unavailability', () => {
+      const connectivityFortune = fortuneManager.getConnectivityErrorFortune(mockProfile);
+      
+      expect(connectivityFortune.source).toBe('connectivity_error');
+      expect(connectivityFortune.message).toBe("Even fortune cookies need Wi-Fi. Come back when the stars (and your connection) align!");
+      expect(connectivityFortune.decorativeElements.ideogram).toBe("📶");
+      expect(connectivityFortune.decorativeElements.signature).toBe("Tech Support Oracle");
+    });
+
+    it('should identify connectivity errors correctly', () => {
+      const aiFortune: Fortune = {
+        id: 'ai_fortune',
+        message: 'AI generated message',
+        generatedAt: new Date(),
+        expiresAt: calculateFortuneExpiration(new Date()),
+        source: 'ai',
+        decorativeElements: { ideogram: '龍', signature: 'AI' }
+      };
+
+      const connectivityFortune: Fortune = {
+        id: 'connectivity_fortune',
+        message: 'Even fortune cookies need Wi-Fi. Come back when the stars (and your connection) align!',
+        generatedAt: new Date(),
+        expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+        source: 'connectivity_error',
+        decorativeElements: { ideogram: '📶', signature: 'Tech Support Oracle' }
+      };
+
+      expect(FortuneManager.isConnectivityError(aiFortune)).toBe(false);
+      expect(FortuneManager.isConnectivityError(connectivityFortune)).toBe(true);
     });
   });
 

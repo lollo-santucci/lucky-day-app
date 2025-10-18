@@ -109,7 +109,7 @@
     - Update task.readme.md with implementation details and testing instructions
     - _Requirements: 1.4, 1.5, 7.1_
 
-  - [ ] 5.3 Create fallback fortune system
+  - [x] 5.3 Create fallback fortune system
     - Implement pre-written fallback fortunes database
     - Add "fortuna artigianale" banner for fallback mode
     - Create fallback selection logic

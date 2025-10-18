@@ -20,7 +20,7 @@ export interface Fortune {
   /** When the fortune expires (always 8am the next day, regardless of generation time) */
   expiresAt: Date;
   /** Source of the fortune */
-  source: 'ai' | 'fallback';
+  source: 'ai' | 'connectivity_error';
   /** Decorative elements for display */
   decorativeElements: DecorativeElements;
 }

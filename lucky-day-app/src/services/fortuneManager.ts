@@ -7,7 +7,7 @@
 import { Fortune, calculateFortuneExpiration, DecorativeElements, canGenerateFortuneToday, getNext8amLocalTime } from '../types/fortune';
 import { AstrologicalProfile } from '../types/astrology';
 import { AppStorage } from '../utils/storage';
-import { llmService, LLMError, LLMErrorType } from './llm';
+import { llmService } from './llm';
 
 /**
  * Fortune Manager error types
@@ -45,62 +45,7 @@ export interface FortuneState {
   timeUntilNext: number;
 }
 
-/**
- * Fallback fortune database
- * Used when LLM is unavailable or fails
- */
-const FALLBACK_FORTUNES: Array<{ message: string; ideogram: string; signature: string }> = [
-  {
-    message: "Today's path reveals itself to those who walk with patience and wisdom.",
-    ideogram: "智",
-    signature: "Ancient Wisdom"
-  },
-  {
-    message: "Like bamboo in the wind, flexibility brings strength to your endeavors.",
-    ideogram: "柔",
-    signature: "Master of Adaptation"
-  },
-  {
-    message: "The dragon within you stirs; let your inner fire illuminate new possibilities.",
-    ideogram: "龍",
-    signature: "Dragon's Heart"
-  },
-  {
-    message: "Water finds its way around obstacles; so too shall your spirit flow forward.",
-    ideogram: "水",
-    signature: "River's Teaching"
-  },
-  {
-    message: "In stillness, the mind discovers what motion cannot reveal.",
-    ideogram: "靜",
-    signature: "Silent Master"
-  },
-  {
-    message: "Today's small steps create tomorrow's great journey.",
-    ideogram: "步",
-    signature: "Path Walker"
-  },
-  {
-    message: "The wise person learns from every season; what does today teach you?",
-    ideogram: "學",
-    signature: "Eternal Student"
-  },
-  {
-    message: "Your inner light shines brightest when shared with others.",
-    ideogram: "光",
-    signature: "Light Bearer"
-  },
-  {
-    message: "Like the phoenix, transformation brings renewal to your spirit.",
-    ideogram: "鳳",
-    signature: "Phoenix Rising"
-  },
-  {
-    message: "Balance is not stillness, but harmony in motion.",
-    ideogram: "和",
-    signature: "Harmony Keeper"
-  }
-];
+
 
 /**
  * Fortune Manager Class
@@ -181,6 +126,11 @@ export class FortuneManager {
       return true;
     }
 
+    // If current fortune is a connectivity error, can always try again
+    if (this.currentFortune.source === 'connectivity_error') {
+      return true;
+    }
+
     // If current fortune is expired, can generate
     if (this.isFortuneExpired(this.currentFortune)) {
       return true;
@@ -226,23 +176,32 @@ export class FortuneManager {
           decorativeElements
         };
 
+        console.log('Successfully generated AI fortune');
+
       } catch (error) {
-        console.warn('LLM fortune generation failed, using fallback:', error);
+        console.warn('LLM fortune generation failed, showing connectivity message:', error);
         
-        // Use fallback fortune
-        fortune = this.generateFallbackFortune(profile, now);
+        // Generate connectivity error message instead of consuming daily fortune
+        // This allows users to try again when back online
+        fortune = this.generateConnectivityErrorFortune(profile, now);
+        
+        console.log('Generated connectivity error message due to LLM failure');
       }
 
-      // Cache the fortune
-      await this.cacheFortune(fortune);
-      
-      // Update tracking
-      this.currentFortune = fortune;
-      this.lastFortuneDate = now;
-      this.addToPreviousFortunes(fortune.message);
+      // Only cache and update state for successful AI fortunes
+      // Connectivity errors don't consume the daily fortune quota
+      if (fortune.source === 'ai') {
+        // Cache the fortune
+        await this.cacheFortune(fortune);
+        
+        // Update tracking
+        this.currentFortune = fortune;
+        this.lastFortuneDate = now;
+        this.addToPreviousFortunes(fortune.message);
 
-      // Update app state
-      await this.updateAppState();
+        // Update app state
+        await this.updateAppState();
+      }
 
       return fortune;
 
@@ -276,6 +235,25 @@ export class FortuneManager {
     }
 
     return this.currentFortune;
+  }
+
+  /**
+   * Get connectivity error fortune for any scenario where LLM is unavailable
+   * This replaces the old "offline fallback" concept since they're the same thing
+   */
+  public getConnectivityErrorFortune(profile: AstrologicalProfile): Fortune {
+    const now = new Date();
+    return this.generateConnectivityErrorFortune(profile, now);
+  }
+
+  /**
+   * Check if the app is in offline mode (no network connection)
+   * This is a placeholder - actual network detection would be implemented in the UI layer
+   */
+  public isOfflineMode(): boolean {
+    // This would be implemented with actual network detection
+    // For now, return false as this is handled by LLM service timeouts
+    return false;
   }
 
   /**
@@ -351,6 +329,13 @@ export class FortuneManager {
   }
 
   /**
+   * Check if a fortune is a connectivity error (Wi-Fi message)
+   */
+  public static isConnectivityError(fortune: Fortune): boolean {
+    return fortune.source === 'connectivity_error';
+  }
+
+  /**
    * Check if fortune is expired
    */
   private isFortuneExpired(fortune: Fortune): boolean {
@@ -359,25 +344,24 @@ export class FortuneManager {
   }
 
   /**
-   * Generate fallback fortune when LLM is unavailable
+   * Generate connectivity error message when LLM is unavailable
+   * This doesn't consume the daily fortune quota, allowing users to try again when back online
    */
-  private generateFallbackFortune(profile: AstrologicalProfile, generatedAt: Date): Fortune {
-    // Select a random fallback fortune
-    const randomIndex = Math.floor(Math.random() * FALLBACK_FORTUNES.length);
-    const fallback = FALLBACK_FORTUNES[randomIndex];
-
+  private generateConnectivityErrorFortune(profile: AstrologicalProfile, generatedAt: Date): Fortune {
     return {
       id: this.generateFortuneId(),
-      message: fallback.message,
+      message: "Even fortune cookies need Wi-Fi. Come back when the stars (and your connection) align!",
       generatedAt,
-      expiresAt: calculateFortuneExpiration(generatedAt),
-      source: 'fallback',
+      expiresAt: new Date(generatedAt.getTime() + 5 * 60 * 1000), // Expires in 5 minutes
+      source: 'connectivity_error',
       decorativeElements: {
-        ideogram: fallback.ideogram,
-        signature: fallback.signature
+        ideogram: "📶", // Wi-Fi symbol as ideogram
+        signature: "Tech Support Oracle"
       }
     };
   }
+
+
 
   /**
    * Generate decorative elements based on profile

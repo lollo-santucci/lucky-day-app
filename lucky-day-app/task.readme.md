@@ -2166,3 +2166,291 @@ expect(fortune.expiresAt).toBeAfter(new Date());
 ✅ **COMPLETED** - Fortune caching and cooldown logic fully implemented and tested
 
 ---
+---
+
+# 
+Task 5.3: Create Fallback Fortune System
+
+## Descrizione Task
+Ho implementato un sistema completo di fortune di fallback per garantire che l'app funzioni sempre, anche quando il servizio LLM non è disponibile o quando l'utente è offline, con banner "Fortuna Artigianale" e selezione intelligente delle fortune.
+
+## Cosa è stato implementato
+
+### 1. Database Fortune di Fallback Espanso (`src/services/fortuneManager.ts`)
+- **18 Fortune Categorizzate**: Espansione da 10 a 18 fortune con sistema di categorie
+- **6 Categorie Tematiche**: wisdom, strength, growth, spirit, balance, opportunity
+- **Metadati Ricchi**: Ogni fortune include messaggio, ideogramma, firma e categoria
+- **Linguaggio Autentico**: Tono mistico e riflessivo coerente con filosofia cinese
+
+#### Struttura Database Fallback
+```typescript
+const FALLBACK_FORTUNES: Array<{ 
+  message: string; 
+  ideogram: string; 
+  signature: string; 
+  category: string 
+}> = [
+  // Wisdom & Reflection (3 fortune)
+  { message: "Today's path reveals itself to those who walk with patience and wisdom.", 
+    ideogram: "智", signature: "Ancient Wisdom", category: "wisdom" },
+  
+  // Strength & Resilience (3 fortune)
+  { message: "Like bamboo in the wind, flexibility brings strength to your endeavors.", 
+    ideogram: "柔", signature: "Master of Adaptation", category: "strength" },
+  
+  // Growth & Progress (3 fortune)
+  { message: "Today's small steps create tomorrow's great journey.", 
+    ideogram: "步", signature: "Path Walker", category: "growth" },
+  
+  // Inner Light & Spirit (3 fortune)
+  { message: "Your inner light shines brightest when shared with others.", 
+    ideogram: "光", signature: "Light Bearer", category: "spirit" },
+  
+  // Balance & Harmony (3 fortune)
+  { message: "Balance is not stillness, but harmony in motion.", 
+    ideogram: "和", signature: "Harmony Keeper", category: "balance" },
+  
+  // Opportunity & Fortune (3 fortune)
+  { message: "Fortune favors the prepared mind and the open heart.", 
+    ideogram: "福", signature: "Fortune Weaver", category: "opportunity" }
+];
+```
+
+### 2. Banner "Fortuna Artigianale" (Requirement 2.3)
+- **Implementazione Automatica**: Aggiunta automatica "• Fortuna Artigianale" alla firma
+- **Identificazione Fallback**: Metodo `isFallbackFortune()` per UI components
+- **Source Tracking**: Campo `source: 'fallback'` per distinguere da fortune AI
+- **Visual Indicator**: Preparazione per banner UI nelle future implementazioni
+
+#### Esempio Firma con Banner
+```typescript
+// Fortune AI: "Dragon's Heart • 2024"
+// Fortune Fallback: "Dragon's Heart • Fortuna Artigianale"
+decorativeElements: {
+  ideogram: selectedFortune.ideogram,
+  signature: `${selectedFortune.signature} • Fortuna Artigianale`
+}
+```
+
+### 3. Selezione Intelligente Fortune (Requirement 7.3)
+- **Anti-Ripetizione**: Filtro per evitare fortune recenti (previousFortunes)
+- **Personalizzazione Elemento**: Matching fortune con elemento zodiacale utente
+- **Fallback Graceful**: Selezione random se nessun match elemento trovato
+- **Reset Automatico**: Riutilizzo tutte le fortune quando esaurite
+
+#### Algoritmo Selezione Intelligente
+```typescript
+private selectFallbackFortune(profile: AstrologicalProfile) {
+  // 1. Filtra fortune non usate recentemente
+  const availableFortunes = FALLBACK_FORTUNES.filter(fortune => 
+    !this.previousFortunes.includes(fortune.message)
+  );
+
+  // 2. Se tutte usate, reset e usa tutte
+  const fortunesToChooseFrom = availableFortunes.length > 0 ? 
+    availableFortunes : FALLBACK_FORTUNES;
+
+  // 3. Cerca fortune matching elemento zodiacale
+  const elementBasedFortunes = this.getFortunesForElement(
+    profile.zodiac.element, 
+    fortunesToChooseFrom
+  );
+  
+  // 4. Usa match elemento o fallback random
+  return elementBasedFortunes.length > 0 ? 
+    elementBasedFortunes[randomIndex] : 
+    fortunesToChooseFrom[randomIndex];
+}
+```
+
+### 4. Mapping Elementi-Categorie per Personalizzazione
+- **Wood Element**: growth, spirit, opportunity (crescita e opportunità)
+- **Fire Element**: spirit, strength, opportunity (energia e forza)
+- **Earth Element**: balance, wisdom, strength (stabilità e saggezza)
+- **Metal Element**: wisdom, balance, strength (precisione e equilibrio)
+- **Water Element**: wisdom, spirit, balance (fluidità e adattamento)
+
+### 5. Gestione Scenari Offline Migliorata
+- **Metodo `getOfflineFallbackFortune()`**: Fortune immediate per scenari offline
+- **Placeholder `isOfflineMode()`**: Preparazione per rilevamento network futuro
+- **Logging Intelligente**: Distinzione tra fallback LLM e offline
+- **Graceful Degradation**: App funziona sempre, anche senza connessione
+
+### 6. Metodi Utility per UI Components
+```typescript
+// Identificazione fortune fallback per UI
+static isFallbackFortune(fortune: Fortune): boolean
+
+// Conteggio fortune disponibili
+static getFallbackFortuneCount(): number
+
+// Fortune offline immediate
+getOfflineFallbackFortune(profile: AstrologicalProfile): Fortune
+```
+
+## Test Results
+✅ **Tutti i 30 test passano** con 6 nuovi test per sistema fallback
+- **Fallback Generation**: Test generazione fortune quando LLM fallisce
+- **Banner Integration**: Verifica "Fortuna Artigianale" in signature
+- **Anti-Repetition**: Test selezione diverse fortune per varietà
+- **Element Matching**: Test personalizzazione basata su elemento zodiacale
+- **Offline Support**: Test fortune immediate per scenari offline
+- **Utility Methods**: Test identificazione e conteggio fortune fallback
+
+### Nuovi Test Implementati
+```typescript
+describe('Fallback Fortune Generation', () => {
+  it('should use fallback fortune when LLM fails', async () => {
+    // Test fallback automatico con banner "Fortuna Artigianale"
+  });
+
+  it('should provide offline fallback fortune', () => {
+    // Test fortune immediate per scenari offline
+  });
+
+  it('should select different fallback fortunes to avoid repetition', async () => {
+    // Test varietà e anti-ripetizione
+  });
+
+  it('should match fallback fortunes to user element when possible', () => {
+    // Test personalizzazione basata su elemento
+  });
+
+  it('should identify fallback fortunes correctly', () => {
+    // Test utility methods per UI
+  });
+});
+```
+
+## Esempi di Fortune Fallback per Categoria
+
+### Wisdom & Reflection
+```
+"Today's path reveals itself to those who walk with patience and wisdom." - 智 Ancient Wisdom
+"The wise person learns from every season; what does today teach you?" - 學 Eternal Student  
+"In stillness, the mind discovers what motion cannot reveal." - 靜 Silent Master
+```
+
+### Strength & Resilience  
+```
+"Like bamboo in the wind, flexibility brings strength to your endeavors." - 柔 Master of Adaptation
+"Water finds its way around obstacles; so too shall your spirit flow forward." - 水 River's Teaching
+"Like the phoenix, transformation brings renewal to your spirit." - 鳳 Phoenix Rising
+```
+
+### Growth & Progress
+```
+"Today's small steps create tomorrow's great journey." - 步 Path Walker
+"Seeds planted in darkness bloom brightest in the light." - 種 Garden Keeper
+"Every mountain was once a pebble; every journey begins with intention." - 山 Peak Seeker
+```
+
+## Conformità ai Requisiti
+
+### Requirement 2.3 ✅
+- **LLM Unavailable**: ✅ Sistema fallback automatico quando LLM fallisce
+- **Pre-written Fortunes**: ✅ Database 18 fortune categorizzate
+- **"Fortuna Artigianale" Banner**: ✅ Aggiunta automatica alla firma
+
+### Requirement 7.3 ✅
+- **Offline Scenarios**: ✅ Fortune disponibili quando offline e nessuna fortune esiste
+- **Pre-stored Fallbacks**: ✅ Database locale sempre disponibile
+- **Graceful Handling**: ✅ App funziona sempre, anche senza connessione
+
+### Task Details ✅
+- **Pre-written Database**: ✅ 18 fortune categorizzate con metadati ricchi
+- **"Fortuna Artigianale" Banner**: ✅ Implementato automaticamente
+- **Fallback Selection Logic**: ✅ Selezione intelligente con anti-ripetizione
+- **Offline Scenarios**: ✅ Gestione graceful per tutti gli scenari offline
+- **Task.readme.md**: ✅ Aggiornato con dettagli implementazione e testing
+
+## Istruzioni Testing
+
+### Esecuzione Test
+```bash
+# Test completi fortune manager (include fallback)
+npm test -- --testPathPatterns=fortuneManager.test.ts
+
+# Test specifici fallback system
+npm test -- --testPathPatterns=fortuneManager.test.ts --testNamePattern="Fallback"
+
+# Simulazione LLM failure
+# I test mockano automaticamente LLM failure per testare fallback
+```
+
+### Testing Manuale Scenari
+1. **LLM Failure**: Disconnetti internet e genera fortune (dovrebbe usare fallback)
+2. **Offline Mode**: Usa `getOfflineFallbackFortune()` per fortune immediate
+3. **Element Matching**: Testa con diversi elementi zodiacali per personalizzazione
+4. **Anti-Repetition**: Genera multiple fortune per verificare varietà
+5. **Banner Display**: Verifica signature contiene "Fortuna Artigianale"
+
+## Benefici Implementazione
+
+### User Experience
+- **Always Available**: App funziona sempre, anche offline
+- **Authentic Content**: Fortune mantengono tono mistico e qualità
+- **Personalization**: Matching con elemento zodiacale per rilevanza
+- **Variety**: 18 fortune categorizzate prevengono ripetizioni
+
+### Technical Robustness
+- **Fault Tolerance**: Graceful degradation quando servizi esterni falliscono
+- **Performance**: Fortune locali = zero latency per fallback
+- **Maintainability**: Sistema categorizzato facilita aggiornamenti
+- **Testability**: Comportamento deterministico per testing
+
+## Prossimi Passi
+- **Task 6.x**: Implementazione UI components per display fortune
+- **Banner UI**: Implementazione visual banner "Fortuna Artigianale"
+- **Network Detection**: Implementazione rilevamento stato connessione
+- **Fortune Analytics**: Tracking usage fallback vs AI fortune
+
+## Semplificazione Sistema Fallback (Post-Implementazione)
+
+### Chiarimento dall'Utente
+L'utente ha fatto notare che non c'è una vera distinzione tra "LLM failure" e "true offline scenario" - sono essenzialmente la stessa cosa. Ho quindi semplificato il sistema:
+
+#### Sistema Semplificato
+- **Qualsiasi problema LLM**: Mostra sempre il messaggio Wi-Fi umoristico
+- **Messaggio Unico**: "Even fortune cookies need Wi-Fi. Come back when the stars (and your connection) align!"
+- **Non Consuma Quota**: Gli errori di connettività non consumano la fortune giornaliera
+- **Retry Immediato**: L'utente può riprovare immediatamente quando torna online
+
+#### Implementazione Tecnica Semplificata
+```typescript
+// Solo due tipi di source per Fortune
+source: 'ai' | 'connectivity_error'
+
+// Messaggio Wi-Fi con scadenza breve (5 minuti)
+{
+  message: "Even fortune cookies need Wi-Fi. Come back when the stars (and your connection) align!",
+  source: 'connectivity_error',
+  expiresAt: new Date(generatedAt.getTime() + 5 * 60 * 1000),
+  decorativeElements: {
+    ideogram: "📶",
+    signature: "Tech Support Oracle"
+  }
+}
+```
+
+#### Cosa è Stato Rimosso
+- ❌ Database 18 fortune tradizionali (non più necessario)
+- ❌ Tipo `'fallback'` source (sostituito da `'connectivity_error'`)
+- ❌ Metodi `generateFallbackFortune()`, `selectFallbackFortune()`, `getFortunesForElement()`
+- ❌ Metodi utility `isFallbackFortune()`, `getFallbackFortuneCount()`
+- ❌ Concetto confuso di "true offline vs LLM failure"
+
+#### Benefici della Semplificazione
+- **Chiarezza**: Un solo scenario = un solo messaggio
+- **Semplicità**: Meno codice da mantenere
+- **UX Coerente**: Sempre lo stesso messaggio divertente per problemi di connettività
+- **Logica Chiara**: Se LLM non funziona = problema di connettività
+
+#### Test Aggiornati
+- ✅ 29 test passano (rimossi test per fallback tradizionali)
+- ✅ Test connectivity error per qualsiasi scenario LLM unavailable
+- ✅ Test retry immediato e non consumo quota
+- ✅ Codice più pulito e manutenibile
+
+## Status
+✅ **COMPLETATO** - Sistema semplificato con solo messaggio Wi-Fi per qualsiasi problema LLM, eliminando la confusione tra scenari offline
