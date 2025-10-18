@@ -109,12 +109,23 @@ export class FortuneManager {
       timeUntilNext = Math.max(0, next8am.getTime() - now.getTime());
     }
 
-    return {
+    const state = {
       currentFortune: this.currentFortune,
       lastFortuneDate: this.lastFortuneDate,
       canGenerateNew,
       timeUntilNext
     };
+
+    console.log('FortuneManager.getFortuneState():', {
+      hasFortune: !!this.currentFortune,
+      fortuneId: this.currentFortune?.id,
+      fortuneSource: this.currentFortune?.source,
+      canGenerateNew,
+      timeUntilNext,
+      lastFortuneDate: this.lastFortuneDate
+    });
+
+    return state;
   }
 
   /**
@@ -188,10 +199,9 @@ export class FortuneManager {
         console.log('Generated connectivity error message due to LLM failure');
       }
 
-      // Only cache and update state for successful AI fortunes
-      // Connectivity errors don't consume the daily fortune quota
+      // Handle different fortune types
       if (fortune.source === 'ai') {
-        // Cache the fortune
+        // Cache AI fortunes and update state
         await this.cacheFortune(fortune);
         
         // Update tracking
@@ -201,6 +211,12 @@ export class FortuneManager {
 
         // Update app state
         await this.updateAppState();
+        
+        console.log('AI fortune cached and state updated');
+      } else if (fortune.source === 'connectivity_error') {
+        // For connectivity errors, update current fortune but don't cache or consume quota
+        this.currentFortune = fortune;
+        console.log('Connectivity error fortune set (not cached, quota not consumed)');
       }
 
       return fortune;

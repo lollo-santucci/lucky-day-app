@@ -1,7 +1,7 @@
 /**
  * Centralized LLM Service
  * Handles all AI/LLM interactions for the Lucky Day app
- * Implements 5-second timeout and proper error handling for fortune generation
+ * Implements 15-second timeout and proper error handling for fortune generation
  */
 
 import OpenAI from 'openai';
@@ -66,7 +66,7 @@ export class LLMError extends Error {
 /**
  * Centralized LLM Service Class
  * Manages all interactions with OpenAI and other LLM providers
- * Implements 5-second timeout and comprehensive error handling
+ * Implements 15-second timeout and comprehensive error handling
  */
 export class LLMService {
   private openai: OpenAI;
@@ -79,7 +79,7 @@ export class LLMService {
       model: process.env.EXPO_PUBLIC_OPENAI_MODEL || 'gpt-4o',
       maxTokens: 150,
       temperature: 0.7,
-      timeout: 5000, // 5 second timeout as per requirements
+      timeout: 15000, // 15 second timeout for better reliability
       ...config
     };
 

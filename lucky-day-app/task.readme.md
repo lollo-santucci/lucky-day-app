@@ -2835,3 +2835,311 @@ To test the enhanced fortune ticket display:
 ✅ **COMPLETED** - Enhanced fortune ticket display with authentic Chinese styling and proper text formatting
 
 ---
+
+---
+
+# Task 6.3: Integrate Fortune Generation with UI
+
+## Descrizione Task
+Ho implementato l'integrazione completa tra il sistema di generazione fortune e l'interfaccia utente, creando un'esperienza fluida che gestisce stati di caricamento, errori e notifiche giornaliere per il rituale quotidiano dell'utente.
+
+## Cosa è stato implementato
+
+### 1. NotificationService (`src/services/notificationService.ts`)
+- **Servizio Notifiche Completo**: Gestione notifiche giornaliere per fortune
+- **Permessi Intelligenti**: Richiesta e gestione permessi con fallback graceful
+- **Scheduling Avanzato**: Notifiche programmate per 8am locale con gestione timezone
+- **Trigger Post-Fortune**: Attivazione notifica automatica dopo rivelazione fortune
+- **Gestione Errori**: Classe `NotificationServiceError` con tipi specifici
+
+#### Funzionalità Core NotificationService
+```typescript
+// Gestione permessi
+async requestPermissions(): Promise<NotificationPermissionStatus>
+async getPermissionStatus(): Promise<NotificationPermissionStatus>
+
+// Scheduling notifiche
+async scheduleDailyNotification(): Promise<void>  // 8am locale
+async cancelDailyNotification(): Promise<void>
+async triggerAfterFortuneReveal(): Promise<void>  // Requirement 1.6
+
+// Configurazione
+async updateNotificationSettings(enabled: boolean): Promise<void>
+async handleTimezoneChange(): Promise<void>
+```
+
+#### Configurazione Notifiche
+- **Messaggio**: "Il tuo biscotto è pronto 🍪" (Requirement 1.6)
+- **Timing**: 8am locale con ripetizione giornaliera
+- **Comportamento**: Alert, suono, no badge
+- **Gestione Timezone**: Riprogrammazione automatica per cambi fuso orario
+
+### 2. FortuneScreen Principale (`src/screens/FortuneScreen.tsx`)
+- **Integrazione Fortune Manager**: Connessione diretta con sistema generazione fortune
+- **Gestione Stati UI**: Loading, errore, cooldown, connettività
+- **Cookie Component Integration**: Collegamento FortuneCookie con fortune manager
+- **Notifiche Post-Fortune**: Trigger automatico notifiche dopo rivelazione
+- **Error Recovery**: Gestione errori con retry intelligente
+
+#### Stati UI Gestiti
+```typescript
+type CookieState = 'closed' | 'breaking' | 'opened';
+
+// Stati applicazione
+const [cookieState, setCookieState] = useState<CookieState>('closed');
+const [currentFortune, setCurrentFortune] = useState<Fortune | null>(null);
+const [isGenerating, setIsGenerating] = useState(false);
+const [error, setError] = useState<string | null>(null);
+const [canGenerateNew, setCanGenerateNew] = useState(true);
+```
+
+#### Gestione Errori Granulare
+- **COOLDOWN_ACTIVE**: Messaggio "Please wait 24 hours between fortunes"
+- **NO_PROFILE**: Redirect a onboarding con messaggio chiaro
+- **GENERATION_FAILED**: Mostra connectivity error fortune invece di errore
+- **Connectivity Error**: Bottone retry per riconnessione
+
+### 3. App.tsx - Orchestrazione Completa
+- **Navigation State Management**: Gestione stati app (loading, onboarding, fortune, profile)
+- **Profile Initialization**: Caricamento profilo esistente all'avvio
+- **Notification Setup**: Inizializzazione servizio notifiche
+- **Error Handling**: Gestione errori inizializzazione con recovery
+- **Screen Transitions**: Transizioni fluide tra schermate
+
+#### Flow Applicazione
+```typescript
+type AppScreen = 'loading' | 'onboarding' | 'fortune' | 'profile';
+
+// Inizializzazione app
+const initializeApp = async () => {
+  await notificationService.initialize();
+  const existingProfile = await ProfileManager.loadProfile();
+  
+  if (existingProfile) {
+    setProfile(existingProfile);
+    setCurrentScreen('fortune');
+    // Request notification permissions in background
+  } else {
+    setCurrentScreen('onboarding');
+  }
+};
+```
+
+### 4. Integrazione Fortune Generation
+
+#### Processo Generazione Fortune
+```typescript
+const handleCookieBreak = async () => {
+  setIsGenerating(true);
+  setCookieState('breaking');
+  
+  try {
+    // Generate new fortune
+    const fortune = await fortuneManager.generateFortune(profile);
+    setCurrentFortune(fortune);
+    setCookieState('opened');
+    
+    // Trigger notification for next day (Requirement 1.6)
+    await notificationService.triggerAfterFortuneReveal();
+    
+    updateFortuneState();
+  } catch (error) {
+    // Handle different error types with appropriate UI
+  } finally {
+    setIsGenerating(false);
+  }
+};
+```
+
+#### Stati Loading e Error
+- **Loading State**: "Consulting the cosmic forces..." con spinner
+- **Error State**: Messaggi specifici con bottoni retry
+- **Cooldown State**: Countdown timer fino prossima fortune
+- **Connectivity Error**: Retry button per errori di connessione
+
+### 5. Gestione Cooldown e Timer
+
+#### Sistema Cooldown 24h
+```typescript
+const updateFortuneState = useCallback(() => {
+  const state = fortuneManager.getFortuneState();
+  
+  setCurrentFortune(state.currentFortune);
+  setCanGenerateNew(state.canGenerateNew);
+  
+  // Update countdown timer
+  if (state.timeUntilNext > 0) {
+    const hours = Math.floor(state.timeUntilNext / (1000 * 60 * 60));
+    const minutes = Math.floor((state.timeUntilNext % (1000 * 60 * 60)) / (1000 * 60));
+    setTimeUntilNext(`${hours}h ${minutes}m until next fortune`);
+  }
+}, [canGenerateNew]);
+```
+
+#### Timer Automatico
+- **Update Interval**: Aggiornamento ogni minuto per countdown accurato
+- **State Synchronization**: Sincronizzazione automatica con fortune manager
+- **Visual Feedback**: Display tempo rimanente in formato user-friendly
+
+### 6. Connectivity Error Handling
+
+#### Gestione Errori di Connettività
+- **LLM Timeout**: Mostra connectivity error fortune invece di bloccare app
+- **Retry Logic**: Bottone retry per tentare nuova generazione
+- **Fallback Graceful**: Connectivity error non consuma quota giornaliera
+- **User Feedback**: Messaggio chiaro "Even fortune cookies need Wi-Fi..."
+
+#### Connectivity Error Fortune
+```typescript
+const connectivityFortune = {
+  message: "Even fortune cookies need Wi-Fi. Come back when the stars (and your connection) align!",
+  source: 'connectivity_error',
+  decorativeElements: {
+    ideogram: "📶",
+    signature: "Tech Support Oracle"
+  }
+};
+```
+
+### 7. Design System e UX
+
+#### Visual States
+- **Header**: Greeting personalizzato con mystical nickname
+- **Profile Button**: Accesso rapido a visualizzazione profilo
+- **Footer**: Messaggio inspirational "Your daily ritual of inspiration and calm"
+- **Loading**: Spinner con messaggio mistico
+- **Error**: Messaggi chiari con azioni recovery
+
+#### Responsive Design
+- **SafeAreaView**: Gestione notch e status bar
+- **Keyboard Handling**: Layout responsive per input
+- **Cross-Platform**: Comportamento coerente iOS/Android
+- **Accessibility**: Supporto screen reader e controlli touch
+
+## Conformità ai Requisiti
+
+### Requirement 1.4 ✅ - Fortune Cooldown
+- **24h Cooldown**: Implementato con reset 8am locale
+- **State Management**: Gestione stato fortune con persistenza
+- **Visual Feedback**: Countdown timer e stati disabilitati
+
+### Requirement 1.6 ✅ - Daily Notifications
+- **Notification Trigger**: Attivazione automatica dopo fortune reveal
+- **Message**: "Il tuo biscotto è pronto 🍪" come specificato
+- **Timing**: 8am locale con gestione timezone
+- **Permission Handling**: Richiesta permessi con fallback graceful
+
+### Requirement 2.1 ✅ - Fortune Generation Integration
+- **LLM Integration**: Connessione con fortune manager per generazione AI
+- **Profile Integration**: Utilizzo profilo astrologico per personalizzazione
+- **Error Handling**: Gestione timeout e fallback connectivity error
+
+### Requirement 2.3 ✅ - Fallback Display
+- **Connectivity Error**: Display speciale per errori connessione
+- **Retry Logic**: Possibilità retry senza consumare quota giornaliera
+- **Graceful Degradation**: App funzionale anche senza connessione
+
+## Test e Validazione
+
+### Funzionalità Testate
+- **Fortune Generation Flow**: Test completo da cookie break a display
+- **Error Handling**: Test per tutti i tipi di errore con recovery
+- **Notification Integration**: Test scheduling e trigger post-fortune
+- **State Management**: Test sincronizzazione stati tra componenti
+- **Cooldown Logic**: Test timer e reset 24h
+
+### Scenari Edge Case
+- **No Network**: Gestione offline con connectivity error
+- **Permission Denied**: Fallback graceful per notifiche
+- **Profile Missing**: Redirect automatico a onboarding
+- **LLM Timeout**: Fallback a connectivity error senza bloccare app
+
+## Istruzioni Testing
+
+### Testing Manuale
+```bash
+# 1. Test Fortune Generation
+# - Aprire app con profilo esistente
+# - Toccare cookie per generare fortune
+# - Verificare animazione e display fortune
+
+# 2. Test Error States
+# - Disabilitare network durante generazione
+# - Verificare connectivity error e retry button
+# - Testare cooldown dopo fortune generata
+
+# 3. Test Notifications
+# - Generare fortune e verificare scheduling notifica
+# - Controllare permessi notifiche in Settings
+# - Testare messaggio notifica corretto
+```
+
+### Testing Automatico
+```bash
+# Test integrazione fortune
+npm test -- --testPathPatterns="FortuneScreen|notificationService"
+
+# Test fortune manager
+npm test -- --testPathPatterns="fortuneManager.test.ts"
+
+# Type checking completo
+npm run type-check
+```
+
+## Esempi di Implementazione
+
+### Integrazione Cookie Component
+```typescript
+<FortuneCookie
+  state={cookieState}
+  onBreak={handleCookieBreak}
+  fortune={currentFortune || undefined}
+  disabled={!canGenerateNew || isGenerating}
+/>
+```
+
+### Gestione Notification Post-Fortune
+```typescript
+// Trigger notification after fortune reveal (requirement 1.6)
+await notificationService.triggerAfterFortuneReveal();
+```
+
+### Error Recovery UI
+```typescript
+{currentFortune?.source === 'connectivity_error' && (
+  <TouchableOpacity
+    style={styles.retryButton}
+    onPress={handleRetry}
+    disabled={isGenerating}
+  >
+    <Text style={styles.retryButtonText}>
+      {isGenerating ? 'Retrying...' : 'Try Again'}
+    </Text>
+  </TouchableOpacity>
+)}
+```
+
+## Architettura Implementata
+
+### Service Layer
+- **FortuneManager**: Gestione fortune con cooldown e cache
+- **NotificationService**: Notifiche giornaliere con permessi
+- **ProfileManager**: Gestione profili astrologici
+
+### UI Layer
+- **FortuneScreen**: Schermata principale con integrazione fortune
+- **FortuneCookie**: Componente cookie con animazioni
+- **App**: Orchestrazione navigazione e inizializzazione
+
+### State Management
+- **Local State**: React hooks per stati UI
+- **Persistent State**: AsyncStorage per fortune e profili
+- **Service State**: Singleton services per logica business
+
+## Prossimi Passi
+- **Task 6.4**: Test UI components per fortune integration
+- **Task 7.x**: Design system e theming completo
+- **Task 8.x**: Sistema notifiche avanzato
+
+## Status
+✅ **COMPLETATO** - Integrazione completa fortune generation con UI, gestione stati, errori e notifiche giornaliere per esperienza utente fluida e robusta

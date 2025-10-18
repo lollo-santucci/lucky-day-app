@@ -20,3 +20,11 @@ export {
   fortuneManager,
   type FortuneState 
 } from './fortuneManager';
+
+export {
+  NotificationService,
+  NotificationServiceError,
+  NotificationErrorType,
+  notificationService,
+  type NotificationPermissionStatus
+} from './notificationService';

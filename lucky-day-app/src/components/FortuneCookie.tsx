@@ -31,6 +31,7 @@ export const FortuneCookie: React.FC<FortuneCookieProps> = ({
   fortune,
   disabled,
 }) => {
+
   // Animation values
   const crackAnimation = useRef(new Animated.Value(0)).current;
   const breakAnimation = useRef(new Animated.Value(0)).current;
@@ -164,9 +165,10 @@ export const FortuneCookie: React.FC<FortuneCookieProps> = ({
     });
   };
 
-  // Reset animations when state changes to closed
+  // Handle state changes
   useEffect(() => {
     if (state === 'closed') {
+      // Reset all animations
       crackAnimation.setValue(0);
       breakAnimation.setValue(0);
       ticketAnimation.setValue(0);
@@ -175,6 +177,16 @@ export const FortuneCookie: React.FC<FortuneCookieProps> = ({
         particle.y.setValue(0);
         particle.opacity.setValue(0);
         particle.rotation.setValue(0);
+      });
+    } else if (state === 'opened') {
+      // Ensure ticket animation is complete when state is set to opened
+      // Set all animations to their final state
+      crackAnimation.setValue(1);
+      breakAnimation.setValue(1);
+      ticketAnimation.setValue(1);
+      // Hide particles
+      particleAnimations.forEach(particle => {
+        particle.opacity.setValue(0);
       });
     }
   }, [state]);
