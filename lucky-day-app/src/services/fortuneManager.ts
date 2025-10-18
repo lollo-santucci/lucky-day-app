@@ -367,29 +367,69 @@ export class FortuneManager {
    * Generate decorative elements based on profile
    */
   private generateDecorativeElements(profile: AstrologicalProfile): DecorativeElements {
-    // Map zodiac animals to ideograms
-    const zodiacIdeograms: Record<string, string> = {
-      rat: '鼠',
-      ox: '牛', 
-      tiger: '虎',
-      rabbit: '兔',
-      dragon: '龍',
-      snake: '蛇',
-      horse: '馬',
-      goat: '羊',
-      monkey: '猴',
-      rooster: '雞',
-      dog: '狗',
-      pig: '豬'
+    // Map zodiac animals to ideograms with alternates for variety
+    const zodiacIdeograms: Record<string, string[]> = {
+      rat: ['鼠', '子', '智'],
+      ox: ['牛', '丑', '力'], 
+      tiger: ['虎', '寅', '勇'],
+      rabbit: ['兔', '卯', '柔'],
+      dragon: ['龍', '辰', '威'],
+      snake: ['蛇', '巳', '慧'],
+      horse: ['馬', '午', '速'],
+      goat: ['羊', '未', '和'],
+      monkey: ['猴', '申', '靈'],
+      rooster: ['雞', '酉', '明'],
+      dog: ['狗', '戌', '忠'],
+      pig: ['豬', '亥', '福']
     };
 
-    // Generate signature based on mystical nickname
-    const signature = `${profile.mysticalNickname} • ${new Date().getFullYear()}`;
+    // Element-based ideograms for additional variety
+    const elementIdeograms: Record<string, string[]> = {
+      wood: ['木', '森', '生'],
+      fire: ['火', '炎', '光'],
+      earth: ['土', '山', '穩'],
+      metal: ['金', '鐵', '堅'],
+      water: ['水', '海', '流']
+    };
+
+    // Auspicious signature characters
+    const signatureElements = [
+      '運命', '天機', '星象', '易經', '太極', '陰陽', 
+      '五行', '八卦', '乾坤', '風水', '命理', '玄機'
+    ];
+
+    // Select ideogram (prefer zodiac, fallback to element, then auspicious)
+    const zodiacOptions = zodiacIdeograms[profile.zodiac.animal] || ['福'];
+    const elementOptions = elementIdeograms[profile.zodiac.element] || ['吉'];
+    
+    // Use date-based selection for consistency within the day
+    const today = new Date().toDateString();
+    const seed = this.hashString(today + profile.zodiac.animal);
+    
+    const ideogramPool = [...zodiacOptions, ...elementOptions, '福', '吉', '祥', '運'];
+    const selectedIdeogram = ideogramPool[seed % ideogramPool.length];
+
+    // Generate signature with mystical elements
+    const signatureElement = signatureElements[seed % signatureElements.length];
+    const signature = `${signatureElement}`;
 
     return {
-      ideogram: zodiacIdeograms[profile.zodiac.animal] || '福',
+      ideogram: selectedIdeogram,
       signature
     };
+  }
+
+  /**
+   * Simple hash function for consistent daily selection
+   */
+  private hashString(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash);
   }
 
   /**

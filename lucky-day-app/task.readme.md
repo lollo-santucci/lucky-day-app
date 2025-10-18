@@ -2725,4 +2725,113 @@ import { FortuneCookie } from '@/components';
 ## Status
 ✅ **COMPLETATO** - Componente FortuneCookie implementato con animazioni, audio e testing
 
+---# Task 6.
+2: Implement Fortune Ticket Display
+
+## Task Description
+Enhanced the fortune ticket display with Chinese-inspired decorative elements, improved text formatting for 200-character limit, and authentic visual styling.
+
+## What was implemented
+
+### 1. Enhanced Fortune Ticket Visual Design
+- **Decorative Border**: Added dual-layer border with dashed inner border and solid outer border for authentic Chinese document styling
+- **Improved Layout**: Increased ticket size (85% screen width, max 320px) with better padding and spacing
+- **Enhanced Shadows**: Deeper shadows (6px offset, 12px radius) for better depth perception
+- **Color Refinements**: Used theme colors with proper accent highlighting
+
+### 2. Chinese Decorative Elements Integration
+- **Main Ideogram**: Enhanced size (4xl) with text shadow effects for prominence
+- **Header Accents**: Added "吉" (auspicious) and "祥" (fortunate) characters in header corners
+- **Seal Element**: Added traditional Chinese seal (印) with red circular background
+- **Bottom Decorations**: Added "龍" (dragon) and "鳳" (phoenix) characters with decorative line
+- **Signature Enhancement**: Replaced simple signatures with authentic Chinese mystical terms
+
+### 3. Improved Text Formatting for 200-Character Limit
+- **Content Border**: Added bordered content area with background color for better text readability
+- **Text Constraints**: Implemented `numberOfLines={6}` with `ellipsizeMode="tail"` for proper text truncation
+- **Typography Enhancement**: Improved line height, letter spacing, and font weight for better readability
+- **Minimum Height**: Set minimum content area height (80px) to ensure consistent layout
+
+### 4. Enhanced Decorative Elements Generation
+- **Expanded Ideogram Pool**: Added multiple options per zodiac animal and element
+  - Zodiac animals: Traditional characters + earthly branches + descriptive characters
+  - Elements: Traditional + nature + characteristic characters
+- **Signature Variety**: 12 authentic Chinese mystical terms (運命, 天機, 星象, 易經, etc.)
+- **Daily Consistency**: Implemented hash-based selection for consistent daily appearance
+- **Fallback Handling**: Enhanced fallback banner styling with proper background and typography
+
+### 5. Authentic Chinese Visual Styling
+- **Traditional Layout**: Mimics classical Chinese document structure with header, content, and footer sections
+- **Color Harmony**: Uses theme colors (Jade Red, Soft Gold, Paper Ivory) consistently
+- **Typography Hierarchy**: Clear visual hierarchy with different font sizes and weights
+- **Spacing System**: Consistent spacing using theme spacing tokens
+
+## Technical Implementation Details
+
+### Component Structure
+```typescript
+// Enhanced renderOpenedCookie function with:
+- decorativeBorder: Dual-layer border system
+- ticketHeader: Main ideogram with corner accents
+- contentBorder: Bordered content area for text
+- signatureSection: Seal + signature combination
+- bottomDecorations: Dragon/Phoenix with decorative line
+```
+
+### Styling Enhancements
+```typescript
+// Key style improvements:
+- fortuneTicket: Larger size, better shadows, dual borders
+- decorativeIdeogram: Larger font with text shadow
+- contentBorder: Bordered text area with background
+- sealContainer: Circular red seal element
+- bottomDecorations: Horizontal layout with decorative line
+```
+
+### Fortune Manager Enhancements
+```typescript
+// Enhanced generateDecorativeElements method:
+- zodiacIdeograms: 3 options per animal (traditional, branch, descriptive)
+- elementIdeograms: 3 options per element (traditional, nature, characteristic)
+- signatureElements: 12 authentic Chinese mystical terms
+- hashString: Consistent daily selection algorithm
+```
+
+## Testing Instructions
+
+### 1. Component Tests
+```bash
+npm test src/components/__tests__/FortuneCookie.test.tsx
+```
+Verifies component structure, prop interfaces, and animation requirements.
+
+### 2. Fortune Manager Tests
+```bash
+npm test src/services/__tests__/fortuneManager.test.ts
+```
+Validates decorative elements generation and fortune management logic.
+
+### 3. Visual Testing
+To test the enhanced fortune ticket display:
+1. Import FortuneCookie component in a test screen
+2. Provide mock fortune data with various message lengths
+3. Test different zodiac animals and elements
+4. Verify decorative elements appear correctly
+5. Test fallback banner for connectivity errors
+
+### 4. Manual Testing Scenarios
+- **Long Messages**: Test with 200-character messages to verify truncation
+- **Short Messages**: Test with brief messages to verify minimum height
+- **Different Zodiacs**: Test all 12 zodiac animals for ideogram variety
+- **Different Elements**: Test all 5 elements for signature variety
+- **Fallback Mode**: Test connectivity error display with "fortuna artigianale" banner
+
+## Requirements Satisfied
+- ✅ **Requirement 1.3**: Fortune message displayed on ticket that emerges from cookie
+- ✅ **Requirement 6.5**: Decorative Chinese ideograms and calligraphic signatures included
+- ✅ **Requirement 2.2**: Text formatting handles 200-character limit with proper truncation
+
+## Status
+✅ **COMPLETED** - Enhanced fortune ticket display with authentic Chinese styling and proper text formatting
+
 ---

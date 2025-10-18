@@ -306,8 +306,9 @@ export const FortuneCookie: React.FC<FortuneCookieProps> = ({
         />
       ))}
     </View>
-  );  const 
-renderOpenedCookie = () => (
+  );
+
+  const renderOpenedCookie = () => (
     <View style={styles.cookieContainer}>
       {/* Fortune ticket */}
       <Animated.View
@@ -332,25 +333,54 @@ renderOpenedCookie = () => (
           },
         ]}
       >
+        {/* Decorative border pattern */}
+        <View style={styles.decorativeBorder}>
+          <View style={styles.borderPattern} />
+        </View>
+
+        {/* Header with main ideogram */}
         <View style={styles.ticketHeader}>
           <Text style={styles.decorativeIdeogram}>
             {fortune?.decorativeElements.ideogram || '福'}
           </Text>
+          <View style={styles.headerAccents}>
+            <Text style={styles.accentIdeogram}>吉</Text>
+            <Text style={styles.accentIdeogram}>祥</Text>
+          </View>
         </View>
         
+        {/* Main content area */}
         <View style={styles.ticketContent}>
-          <Text style={styles.fortuneText}>
-            {fortune?.message || 'Your fortune awaits...'}
-          </Text>
+          <View style={styles.contentBorder}>
+            <Text style={styles.fortuneText} numberOfLines={6} ellipsizeMode="tail">
+              {fortune?.message || 'Your fortune awaits...'}
+            </Text>
+          </View>
         </View>
         
+        {/* Footer with signature and decorative elements */}
         <View style={styles.ticketFooter}>
-          <Text style={styles.signature}>
-            {fortune?.decorativeElements.signature || '運命'}
-          </Text>
+          <View style={styles.signatureSection}>
+            <View style={styles.sealContainer}>
+              <Text style={styles.sealText}>印</Text>
+            </View>
+            <Text style={styles.signature}>
+              {fortune?.decorativeElements.signature || '運命'}
+            </Text>
+          </View>
+          
           {fortune?.source === 'connectivity_error' && (
-            <Text style={styles.fallbackBanner}>fortuna artigianale</Text>
+            <View style={styles.fallbackContainer}>
+              <Text style={styles.fallbackBanner}>fortuna artigianale</Text>
+            </View>
           )}
+          
+          {/* Bottom decorative elements */}
+          <View style={styles.bottomDecorations}>
+            <Text style={styles.smallIdeogram}>龍</Text>
+            <View style={styles.decorativeLine} />
+            <Text style={styles.smallIdeogram}>鳳</Text>
+          </View>
         </View>
       </Animated.View>
 
@@ -468,34 +498,84 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   }, 
  fortuneTicket: {
-    width: screenWidth * 0.8,
-    maxWidth: 300,
+    width: screenWidth * 0.85,
+    maxWidth: 320,
     backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.lg,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.xl,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 8,
-    borderWidth: 1,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 12,
+    borderWidth: 2,
     borderColor: theme.colors.accent,
+    position: 'relative',
+  },
+  decorativeBorder: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    right: 8,
+    bottom: 8,
+    borderWidth: 1,
+    borderColor: theme.colors.accentLight,
+    borderRadius: theme.borderRadius.md,
+    borderStyle: 'dashed',
+  },
+  borderPattern: {
+    position: 'absolute',
+    top: -1,
+    left: -1,
+    right: -1,
+    bottom: -1,
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.md,
+    opacity: 0.3,
   },
   ticketHeader: {
     alignItems: 'center',
-    marginBottom: theme.spacing.md,
-    paddingBottom: theme.spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.borderLight,
+    marginBottom: theme.spacing.lg,
+    paddingBottom: theme.spacing.md,
+    borderBottomWidth: 2,
+    borderBottomColor: theme.colors.accent,
+    position: 'relative',
   },
   decorativeIdeogram: {
-    fontSize: theme.typography.fontSize['3xl'],
+    fontSize: theme.typography.fontSize['4xl'],
     color: theme.colors.primary,
     fontWeight: theme.typography.fontWeight.bold,
+    textShadowColor: theme.colors.accentLight,
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  headerAccents: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: theme.spacing.sm,
+  },
+  accentIdeogram: {
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.accent,
+    fontWeight: theme.typography.fontWeight.medium,
   },
   ticketContent: {
-    marginVertical: theme.spacing.lg,
-    paddingHorizontal: theme.spacing.sm,
+    marginVertical: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.md,
+  },
+  contentBorder: {
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
+    borderRadius: theme.borderRadius.sm,
+    padding: theme.spacing.lg,
+    backgroundColor: theme.colors.background,
+    minHeight: 80,
+    justifyContent: 'center',
   },
   fortuneText: {
     fontSize: theme.typography.fontSize.md,
@@ -503,23 +583,67 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: theme.typography.lineHeight.relaxed * theme.typography.fontSize.md,
     fontWeight: theme.typography.fontWeight.medium,
+    letterSpacing: 0.5,
   },
   ticketFooter: {
     alignItems: 'center',
-    paddingTop: theme.spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.borderLight,
+    paddingTop: theme.spacing.lg,
+    borderTopWidth: 2,
+    borderTopColor: theme.colors.accent,
+  },
+  signatureSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: theme.spacing.md,
+  },
+  sealContainer: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: theme.colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: theme.spacing.sm,
+  },
+  sealText: {
+    fontSize: theme.typography.fontSize.xs,
+    color: theme.colors.surface,
+    fontWeight: theme.typography.fontWeight.bold,
   },
   signature: {
-    fontSize: theme.typography.fontSize.sm,
+    fontSize: theme.typography.fontSize.md,
     color: theme.colors.textSecondary,
-    fontStyle: 'italic',
+    fontWeight: theme.typography.fontWeight.medium,
+  },
+  fallbackContainer: {
+    backgroundColor: theme.colors.accentLight,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.full,
+    marginBottom: theme.spacing.sm,
   },
   fallbackBanner: {
     fontSize: theme.typography.fontSize.xs,
+    color: theme.colors.primary,
+    fontWeight: theme.typography.fontWeight.semibold,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  bottomDecorations: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  smallIdeogram: {
+    fontSize: theme.typography.fontSize.sm,
     color: theme.colors.accent,
-    marginTop: theme.spacing.xs,
     fontWeight: theme.typography.fontWeight.medium,
+  },
+  decorativeLine: {
+    width: 40,
+    height: 1,
+    backgroundColor: theme.colors.accent,
+    marginHorizontal: theme.spacing.md,
   },
   cookieCrumbs: {
     position: 'absolute',
