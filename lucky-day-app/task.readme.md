@@ -2454,3 +2454,131 @@ source: 'ai' | 'connectivity_error'
 
 ## Status
 ✅ **COMPLETATO** - Sistema semplificato con solo messaggio Wi-Fi per qualsiasi problema LLM, eliminando la confusione tra scenari offline
+# Task 5.4: Write Unit Tests for Fortune Management
+
+## Descrizione Task
+Ho implementato test unitari completi per il sistema di gestione fortune, coprendo cooldown logic, cache expiration behavior, e fallback fortune selection (connectivity error system). I test garantiscono la robustezza e affidabilità del FortuneManager.
+
+## Cosa è stato implementato
+
+### 1. Test Completi per Cooldown Logic
+- **Edge Case Testing**: Test per boundary conditions come esattamente alle 8am e un minuto prima
+- **Timezone Handling**: Verifica che la logica 8am funzioni correttamente con il tempo locale
+- **Daily Reset Logic**: Test approfonditi per il reset giornaliero alle 8am
+
+### 2. Test per Cache Expiration Behavior
+- **Runtime Expiration**: Test per gestione scadenza cache durante sessione app
+- **Multiple Operations**: Verifica operazioni multiple di cache (save/clear/reload)
+- **Storage Error Handling**: Test per errori durante operazioni di storage
+
+### 3. Test per Fallback Fortune Selection (Connectivity Error System)
+- **Consistent Messages**: Verifica che i messaggi di connectivity error siano consistenti
+- **Multiple Failures**: Test per fallimenti LLM consecutivi
+- **Error Type Handling**: Test per diversi tipi di errore (timeout, network)
+- **Expiration Logic**: Verifica che connectivity errors scadano più velocemente (5 minuti)
+- **Decorative Elements**: Test per elementi decorativi appropriati (📶, "Tech Support Oracle")
+
+### 4. Test per Fortune Generation Timing
+- **Variety Tracking**: Test per tracking delle fortune precedenti per varietà
+- **Rapid Attempts**: Test per tentativi rapidi successivi con gestione cooldown
+- **Force Refresh**: Test per bypass del cooldown in scenari admin/testing
+
+### 5. Test per App State Management
+- **Analytics Updates**: Verifica aggiornamento contatori quando si generano fortune
+- **Missing State**: Test per gestione graceful di app state mancante
+- **Error Resilience**: Test per continuare funzionamento anche se update state fallisce
+
+## Test Results
+✅ **Tutti i 45 test passano** con copertura completa del FortuneManager
+
+### Test Coverage Breakdown
+- **Original Tests**: 29 test esistenti (mantenuti e funzionanti)
+- **Enhanced Tests**: 16 nuovi test aggiunti per copertura completa
+- **Total Coverage**: 45 test che coprono tutti gli aspetti critici
+
+### Nuovi Test Implementati
+```typescript
+describe('Enhanced Cooldown Logic Tests', () => {
+  // Test per edge cases del sistema 8am
+  it('should handle edge case: exactly at 8am boundary')
+  it('should handle edge case: one minute before 8am with same day fortune')
+  it('should handle timezone changes correctly')
+});
+
+describe('Enhanced Cache Expiration Tests', () => {
+  // Test per comportamento cache expiration
+  it('should handle cache expiration during app session')
+  it('should handle multiple cache operations correctly')
+  it('should handle storage errors during cache operations')
+});
+
+describe('Enhanced Connectivity Error Tests (Fallback System)', () => {
+  // Test per sistema fallback (connectivity errors)
+  it('should generate consistent connectivity error messages')
+  it('should handle multiple consecutive LLM failures')
+  it('should handle LLM timeout vs network error consistently')
+  it('should expire connectivity errors faster than regular fortunes')
+  it('should generate appropriate decorative elements for connectivity errors')
+});
+
+describe('Fortune Generation Timing Tests', () => {
+  // Test per timing e varietà
+  it('should track previous fortunes for variety')
+  it('should handle rapid successive generation attempts')
+});
+
+describe('App State Management Tests', () => {
+  // Test per gestione stato app
+  it('should update analytics when generating fortunes')
+  it('should handle missing app state gracefully')
+  it('should continue working even if app state update fails')
+});
+```
+
+## Aspetti Chiave Testati
+
+### 1. Cooldown Logic e Timing (Requirements 12.1, 12.3)
+- **8am Boundary Logic**: Test precisi per il reset giornaliero alle 8am
+- **Edge Cases**: Gestione di casi limite come esattamente alle 8am
+- **Timezone Handling**: Verifica funzionamento con tempo locale
+- **Time Calculations**: Test per calcoli tempo rimanente fino a prossima fortune
+
+### 2. Cache Expiration Behavior (Requirements 12.1, 12.3)
+- **Automatic Cleanup**: Test per pulizia automatica fortune scadute
+- **Session Management**: Verifica gestione cache durante sessioni app
+- **Storage Integration**: Test per integrazione con sistema storage
+- **Error Recovery**: Gestione errori durante operazioni cache
+
+### 3. Fallback Fortune Selection (Requirements 12.1, 12.3)
+- **Connectivity Error System**: Test per sistema semplificato di fallback
+- **Consistent Messaging**: Verifica messaggi consistenti per errori connettività
+- **No Daily Quota Consumption**: Test che connectivity errors non consumino quota giornaliera
+- **Retry Logic**: Verifica possibilità di retry immediato dopo connectivity error
+- **Expiration Timing**: Test per scadenza rapida (5 minuti) dei connectivity errors
+
+### 4. Integration e State Management
+- **Analytics Tracking**: Test per tracking usage e generazione fortune
+- **State Persistence**: Verifica persistenza stato tra sessioni
+- **Error Resilience**: Test per continuare funzionamento anche con errori non critici
+- **Graceful Degradation**: Gestione graceful di stati mancanti o corrotti
+
+## Testing Manuale Scenari
+1. **Cooldown Testing**: Genera fortune e verifica timing fino a prossima disponibile
+2. **Cache Expiration**: Testa scadenza cache e cleanup automatico
+3. **Connectivity Errors**: Disconnetti internet e verifica messaggi Wi-Fi
+4. **Edge Cases**: Testa generazione esattamente alle 8am e boundary conditions
+5. **State Management**: Verifica persistenza analytics e stato app
+
+## Prossimi Passi
+- **Task 6.1**: Implementazione fortune cookie component con animazioni
+- **Task 6.2**: Sistema di display fortune ticket con elementi decorativi
+- **Integration**: Collegamento completo con UI components
+
+## Benefici Implementazione
+- **Robustezza**: 45 test garantiscono affidabilità del sistema fortune
+- **Coverage Completa**: Tutti gli aspetti critici del FortuneManager testati
+- **Regression Prevention**: Test prevengono regressioni durante sviluppo futuro
+- **Documentation**: Test servono come documentazione del comportamento atteso
+- **Confidence**: Sviluppatori possono modificare codice con fiducia
+
+La suite di test completa garantisce che il sistema di gestione fortune funzioni correttamente in tutti gli scenari, dalla generazione normale ai casi di errore, fornendo una base solida per lo sviluppo futuro dell'applicazione.
