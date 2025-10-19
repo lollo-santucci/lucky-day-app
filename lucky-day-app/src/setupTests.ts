@@ -3,6 +3,9 @@
  * Configures global test environment and mocks
  */
 
+// Import jest-native matchers
+import '@testing-library/jest-native/extend-expect';
+
 // Polyfill fetch for OpenAI client in test environment
 global.fetch = require('whatwg-fetch').fetch;
 

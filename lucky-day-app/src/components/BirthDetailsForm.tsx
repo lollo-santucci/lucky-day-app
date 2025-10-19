@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  ScrollView,
 } from 'react-native';
 import { BirthDetails } from '../types/astrology';
 import { DatePicker } from './DatePicker';
@@ -64,26 +65,26 @@ export const BirthDetailsForm: React.FC<BirthDetailsFormProps> = ({
 
   const validateForm = (): boolean => {
     const validation = validateBirthDetails(birthDetails);
-    
+
     if (!validation.isValid) {
       const newErrors: Record<string, string> = {};
-      
+
       if (!birthDetails.date) {
         newErrors.date = 'Birth date is required';
       }
-      
+
       if (!birthDetails.location.latitude || !birthDetails.location.longitude) {
         newErrors.location = 'Birth location is required';
       }
-      
+
       if (birthDetails.date && birthDetails.date > new Date()) {
         newErrors.date = 'Birth date cannot be in the future';
       }
-      
+
       setErrors(newErrors);
       return false;
     }
-    
+
     setErrors({});
     return true;
   };
@@ -99,66 +100,74 @@ export const BirthDetailsForm: React.FC<BirthDetailsFormProps> = ({
 
   return (
     <View style={styles.container}>
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Birth Date *</Text>
-        <Text style={styles.sectionDescription}>
-          When were you born? This determines your Chinese zodiac sign.
-        </Text>
-        <DatePicker
-          value={birthDetails.date}
-          onChange={updateBirthDate}
-          error={errors.date}
-        />
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Birth Time</Text>
-        <Text style={styles.sectionDescription}>
-          What time were you born? If unknown, we'll use noon for calculations.
-        </Text>
-        <TimePicker
-          value={birthDetails.time}
-          onChange={updateBirthTime}
-        />
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Birth Location *</Text>
-        <Text style={styles.sectionDescription}>
-          Where were you born? This helps us calculate your Four Pillars accurately.
-        </Text>
-        <LocationPicker
-          value={birthDetails.location}
-          onChange={updateLocation}
-          error={errors.location}
-        />
-      </View>
-
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[styles.submitButton, (isLoading || isSubmitting) && styles.submitButtonDisabled]}
-          onPress={handleSubmit}
-          disabled={isLoading || isSubmitting}
-        >
-          <Text style={styles.submitButtonText}>
-            {(isLoading || isSubmitting) ? 'Processing...' : submitButtonText}
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Birth Date *</Text>
+          <Text style={styles.sectionDescription}>
+            When were you born? This determines your Chinese zodiac sign.
           </Text>
-        </TouchableOpacity>
-        
-        {onCancel && (
+          <DatePicker
+            value={birthDetails.date}
+            onChange={updateBirthDate}
+            error={errors.date}
+          />
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Birth Time</Text>
+          <Text style={styles.sectionDescription}>
+            What time were you born? If unknown, we'll use noon for calculations.
+          </Text>
+          <TimePicker
+            key={`time-${birthDetails.time || 'null'}-${birthDetails.date.getTime()}`}
+            value={birthDetails.time}
+            onChange={updateBirthTime}
+          />
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Birth Location *</Text>
+          <Text style={styles.sectionDescription}>
+            Where were you born? This helps us calculate your Four Pillars accurately.
+          </Text>
+          <LocationPicker
+            value={birthDetails.location}
+            onChange={updateLocation}
+            error={errors.location}
+          />
+        </View>
+
+        <View style={styles.buttonContainer}>
           <TouchableOpacity
-            style={styles.cancelButton}
-            onPress={onCancel}
+            style={[styles.submitButton, (isLoading || isSubmitting) && styles.submitButtonDisabled]}
+            onPress={handleSubmit}
             disabled={isLoading || isSubmitting}
           >
-            <Text style={styles.cancelButtonText}>Cancel</Text>
+            <Text style={styles.submitButtonText}>
+              {(isLoading || isSubmitting) ? 'Processing...' : submitButtonText}
+            </Text>
           </TouchableOpacity>
-        )}
-      </View>
 
-      <Text style={styles.disclaimer}>
-        * Required fields. Your birth details are used only for astrological calculations and remain private on your device.
-      </Text>
+          {onCancel && (
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={onCancel}
+              disabled={isLoading || isSubmitting}
+            >
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        <Text style={styles.disclaimer}>
+          * Required fields. Your birth details are used only for astrological calculations and remain private on your device.
+        </Text>
+      </ScrollView>
     </View>
   );
 };
@@ -166,6 +175,13 @@ export const BirthDetailsForm: React.FC<BirthDetailsFormProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 40,
   },
   section: {
     marginBottom: 32,

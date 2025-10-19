@@ -7,6 +7,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BirthDetailsForm } from '../components/BirthDetailsForm';
@@ -83,6 +84,11 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.header}>
+            <Image 
+              source={require('../../assets/icon.png')} 
+              style={styles.logo}
+              resizeMode="contain"
+            />
             <Text style={styles.title}>Welcome to Lucky Day</Text>
             <Text style={styles.subtitle}>
               To personalize your daily fortunes, we need to know a bit about your cosmic blueprint
@@ -117,6 +123,11 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 32,
     alignItems: 'center',
+  },
+  logo: {
+    width: 80,
+    height: 80,
+    marginBottom: 20,
   },
   title: {
     fontSize: 28,

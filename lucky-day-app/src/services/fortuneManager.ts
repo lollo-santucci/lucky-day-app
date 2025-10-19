@@ -311,6 +311,22 @@ export class FortuneManager {
   }
 
   /**
+   * Clear fortune when profile is updated
+   * This allows users to generate fresh fortunes with their new astrological data
+   */
+  public async clearFortuneForProfileUpdate(): Promise<void> {
+    try {
+      console.log('Clearing fortune due to profile update');
+      await this.clearFortune();
+      console.log('Fortune cleared successfully for profile update');
+    } catch (error) {
+      console.warn('Failed to clear fortune for profile update:', error);
+      // Don't throw here as this is called during profile updates
+      // and we don't want to fail the profile update if fortune clearing fails
+    }
+  }
+
+  /**
    * Get time until next fortune is available (in milliseconds)
    */
   public getTimeUntilNextFortune(): number {

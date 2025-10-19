@@ -174,6 +174,7 @@ export class ProfileManager {
 
   /**
    * Updates an existing profile with new data
+   * Automatically clears existing fortune so user can generate fresh one
    */
   static async updateProfile(updates: Partial<AstrologicalProfile>): Promise<AstrologicalProfile> {
     try {
@@ -191,6 +192,16 @@ export class ProfileManager {
       };
 
       await this.saveProfile(updatedProfile);
+      
+      // Clear existing fortune so user can generate a new one with updated profile
+      try {
+        const { fortuneManager } = await import('./fortuneManager');
+        await fortuneManager.clearFortuneForProfileUpdate();
+      } catch (error) {
+        console.warn('Failed to clear fortune after profile update:', error);
+        // Don't throw here as profile update was successful
+      }
+      
       console.log('Profile updated successfully');
       return updatedProfile;
 

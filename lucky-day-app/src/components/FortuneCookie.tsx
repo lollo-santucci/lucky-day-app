@@ -193,6 +193,7 @@ export const FortuneCookie: React.FC<FortuneCookieProps> = ({
 
   const renderClosedCookie = () => (
     <TouchableOpacity
+      testID="cookie-touchable"
       style={[styles.cookieContainer, disabled && styles.disabled]}
       onPress={handleCookiePress}
       disabled={disabled}
@@ -213,8 +214,8 @@ export const FortuneCookie: React.FC<FortuneCookieProps> = ({
           },
         ]}
       >
-        <View style={styles.cookieTop} />
-        <View style={styles.cookieBottom} />
+        <View testID="cookie-top" style={styles.cookieTop} />
+        <View testID="cookie-bottom" style={styles.cookieBottom} />
         
         {/* Crack lines */}
         <Animated.View
@@ -240,9 +241,10 @@ export const FortuneCookie: React.FC<FortuneCookieProps> = ({
   );
 
   const renderBreakingCookie = () => (
-    <View style={styles.cookieContainer}>
+    <View testID="cookie-container" style={styles.cookieContainer}>
       {/* Cookie halves */}
       <Animated.View
+        testID="cookie-half-left"
         style={[
           styles.cookieHalf,
           styles.cookieHalfLeft,
@@ -269,6 +271,7 @@ export const FortuneCookie: React.FC<FortuneCookieProps> = ({
         ]}
       />
       <Animated.View
+        testID="cookie-half-right"
         style={[
           styles.cookieHalf,
           styles.cookieHalfRight,
@@ -321,9 +324,10 @@ export const FortuneCookie: React.FC<FortuneCookieProps> = ({
   );
 
   const renderOpenedCookie = () => (
-    <View style={styles.cookieContainer}>
+    <View testID="cookie-container" style={styles.cookieContainer}>
       {/* Fortune ticket */}
       <Animated.View
+        testID="fortune-ticket"
         style={[
           styles.fortuneTicket,
           {
@@ -352,19 +356,19 @@ export const FortuneCookie: React.FC<FortuneCookieProps> = ({
 
         {/* Header with main ideogram */}
         <View style={styles.ticketHeader}>
-          <Text style={styles.decorativeIdeogram}>
+          <Text testID="decorative-ideogram" style={styles.decorativeIdeogram}>
             {fortune?.decorativeElements.ideogram || '福'}
           </Text>
           <View style={styles.headerAccents}>
-            <Text style={styles.accentIdeogram}>吉</Text>
-            <Text style={styles.accentIdeogram}>祥</Text>
+            <Text testID="accent-ideogram-1" style={styles.accentIdeogram}>吉</Text>
+            <Text testID="accent-ideogram-2" style={styles.accentIdeogram}>祥</Text>
           </View>
         </View>
         
         {/* Main content area */}
         <View style={styles.ticketContent}>
           <View style={styles.contentBorder}>
-            <Text style={styles.fortuneText} numberOfLines={6} ellipsizeMode="tail">
+            <Text testID="fortune-message" style={styles.fortuneText} numberOfLines={0}>
               {fortune?.message || 'Your fortune awaits...'}
             </Text>
           </View>
@@ -374,30 +378,30 @@ export const FortuneCookie: React.FC<FortuneCookieProps> = ({
         <View style={styles.ticketFooter}>
           <View style={styles.signatureSection}>
             <View style={styles.sealContainer}>
-              <Text style={styles.sealText}>印</Text>
+              <Text testID="seal-text" style={styles.sealText}>印</Text>
             </View>
-            <Text style={styles.signature}>
+            <Text testID="signature" style={styles.signature}>
               {fortune?.decorativeElements.signature || '運命'}
             </Text>
           </View>
           
           {fortune?.source === 'connectivity_error' && (
             <View style={styles.fallbackContainer}>
-              <Text style={styles.fallbackBanner}>fortuna artigianale</Text>
+              <Text testID="fallback-banner" style={styles.fallbackBanner}>fortuna artigianale</Text>
             </View>
           )}
           
           {/* Bottom decorative elements */}
           <View style={styles.bottomDecorations}>
-            <Text style={styles.smallIdeogram}>龍</Text>
-            <View style={styles.decorativeLine} />
-            <Text style={styles.smallIdeogram}>鳳</Text>
+            <Text testID="small-ideogram-1" style={styles.smallIdeogram}>龍</Text>
+            <View testID="decorative-line" style={styles.decorativeLine} />
+            <Text testID="small-ideogram-2" style={styles.smallIdeogram}>鳳</Text>
           </View>
         </View>
       </Animated.View>
 
       {/* Cookie crumbs */}
-      <View style={styles.cookieCrumbs}>
+      <View testID="cookie-crumbs" style={styles.cookieCrumbs}>
         <View style={[styles.crumb, styles.crumb1]} />
         <View style={[styles.crumb, styles.crumb2]} />
         <View style={[styles.crumb, styles.crumb3]} />
@@ -406,7 +410,7 @@ export const FortuneCookie: React.FC<FortuneCookieProps> = ({
   );
 
   return (
-    <View style={styles.container}>
+    <View testID="cookie-container" style={styles.container}>
       {state === 'closed' && renderClosedCookie()}
       {state === 'breaking' && renderBreakingCookie()}
       {state === 'opened' && renderOpenedCookie()}
@@ -586,7 +590,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.sm,
     padding: theme.spacing.lg,
     backgroundColor: theme.colors.background,
-    minHeight: 80,
+    minHeight: 120,
     justifyContent: 'center',
   },
   fortuneText: {

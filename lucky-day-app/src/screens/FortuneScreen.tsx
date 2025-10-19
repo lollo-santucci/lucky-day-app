@@ -238,13 +238,12 @@ export const FortuneScreen: React.FC<FortuneScreenProps> = ({
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={onViewProfile}>
-          <Text style={styles.profileButton}>View Profile</Text>
-        </TouchableOpacity>
         <Text style={styles.greeting}>
-          Welcome, {profile.mysticalNickname}
+          Lucky Day, 吉日
         </Text>
-
+        <TouchableOpacity style={styles.profileButtonContainer} onPress={onViewProfile}>
+          <Text style={styles.profileButton}>{profile.mysticalNickname}</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Main Content */}
@@ -296,23 +295,26 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 20,
     paddingVertical: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.borderLight,
+  },
+  profileButtonContainer: {
+    padding: 8,
   },
   profileButton: {
     fontSize: 16,
     color: theme.colors.primary,
     fontWeight: '500',
-    position: 'absolute',
-    right: -screenWidth / 2 + 80,
-    top: 0,
   },
   greeting: {
     fontSize: 18,
     color: theme.colors.text,
     fontWeight: '600',
     textAlign: 'center',
+    flex: 1,
   },
   content: {
     flex: 1,

@@ -43,6 +43,10 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
       // Save the updated profile
       await ProfileManager.saveProfile(updatedProfile);
       
+      // Clear existing fortune so user can generate a new one with updated profile
+      const { fortuneManager } = await import('../services/fortuneManager');
+      await fortuneManager.clearFortuneForProfileUpdate();
+      
       // Update local state
       setCurrentProfile(updatedProfile);
       
@@ -55,7 +59,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
       
       Alert.alert(
         'Profile Updated',
-        'Your astrological profile has been successfully updated.',
+        'Your astrological profile has been updated! You can now generate a fresh fortune based on your new cosmic blueprint.',
         [{ text: 'OK', style: 'default' }]
       );
       
@@ -226,22 +230,24 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
             <View style={styles.headerSpacer} />
           </View>
           
-          <BirthDetailsForm
-            onSubmit={handleProfileEditSubmit}
-            onCancel={handleEditCancel}
-            isLoading={isLoading}
-            submitButtonText="Update Profile"
-            initialValues={{
-              // We don't have access to original birth details, so user needs to re-enter
-              date: new Date(),
-              time: null,
-              location: {
-                latitude: 0,
-                longitude: 0,
-                timezone: 'UTC'
-              }
-            }}
-          />
+          <View style={styles.modalContent}>
+            <BirthDetailsForm
+              onSubmit={handleProfileEditSubmit}
+              onCancel={handleEditCancel}
+              isLoading={isLoading}
+              submitButtonText="Update Profile"
+              initialValues={{
+                // We don't have access to original birth details, so user needs to re-enter
+                date: new Date(),
+                time: null,
+                location: {
+                  latitude: 0,
+                  longitude: 0,
+                  timezone: 'UTC'
+                }
+              }}
+            />
+          </View>
         </SafeAreaView>
       </Modal>
     </SafeAreaView>
@@ -395,6 +401,9 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     backgroundColor: theme.colors.background,
+  },
+  modalContent: {
+    flex: 1,
   },
   modalHeader: {
     flexDirection: 'row',
