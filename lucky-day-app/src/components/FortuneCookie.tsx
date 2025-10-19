@@ -400,12 +400,7 @@ export const FortuneCookie: React.FC<FortuneCookieProps> = ({
         </View>
       </Animated.View>
 
-      {/* Cookie crumbs */}
-      <View testID="cookie-crumbs" style={styles.cookieCrumbs}>
-        <View style={[styles.crumb, styles.crumb1]} />
-        <View style={[styles.crumb, styles.crumb2]} />
-        <View style={[styles.crumb, styles.crumb3]} />
-      </View>
+
     </View>
   );
 
@@ -590,8 +585,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.sm,
     padding: theme.spacing.lg,
     backgroundColor: theme.colors.background,
-    minHeight: 120,
-    justifyContent: 'center',
+    minHeight: 80,
   },
   fortuneText: {
     fontSize: theme.typography.fontSize.md,
@@ -600,6 +594,7 @@ const styles = StyleSheet.create({
     lineHeight: theme.typography.lineHeight.relaxed * theme.typography.fontSize.md,
     fontWeight: theme.typography.fontWeight.medium,
     letterSpacing: 0.5,
+    flexShrink: 1,
   },
   ticketFooter: {
     alignItems: 'center',
@@ -661,34 +656,5 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.accent,
     marginHorizontal: theme.spacing.md,
   },
-  cookieCrumbs: {
-    position: 'absolute',
-    bottom: 20,
-    left: 0,
-    right: 0,
-    height: 20,
-  },
-  crumb: {
-    position: 'absolute',
-    backgroundColor: theme.colors.accent,
-    borderRadius: 3,
-  },
-  crumb1: {
-    width: 6,
-    height: 6,
-    left: 40,
-    bottom: 5,
-  },
-  crumb2: {
-    width: 4,
-    height: 4,
-    left: 80,
-    bottom: 8,
-  },
-  crumb3: {
-    width: 5,
-    height: 5,
-    right: 50,
-    bottom: 3,
-  },
+
 });
