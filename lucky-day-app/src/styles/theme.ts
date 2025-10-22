@@ -34,6 +34,21 @@ export const theme = {
   },
   
   typography: {
+    // Font Families
+    fontFamily: {
+      // System fonts (fallbacks)
+      system: 'System',
+      
+      // Custom fonts (add your custom fonts here)
+      // Example: 'CustomFont-Regular', 'CustomFont-Bold', etc.
+      // primary: 'YourCustomFont-Regular',
+      // primaryBold: 'YourCustomFont-Bold',
+      // secondary: 'YourSecondaryFont-Regular',
+      
+      // Default font family
+      default: 'System', // Change this to your preferred default font
+    },
+    
     // Font Sizes
     fontSize: {
       xs: 10,

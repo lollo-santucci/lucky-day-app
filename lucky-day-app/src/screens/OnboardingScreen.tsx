@@ -7,7 +7,6 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BirthDetailsForm } from '../components/BirthDetailsForm';
@@ -30,7 +29,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
         Alert.alert('Error', 'Please select your birth date');
         return;
       }
-      
+
       if (!birthDetails.location.latitude || !birthDetails.location.longitude) {
         Alert.alert('Error', 'Please select your birth location');
         return;
@@ -38,15 +37,15 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
 
       // Create and save the astrological profile
       const profile = await ProfileManager.createAndSaveProfile(birthDetails);
-      
+
       // Profile creation successful, pass it to the parent component
       onComplete(profile);
-      
+
     } catch (error) {
       console.error('Profile creation failed:', error);
-      
+
       let errorMessage = 'Failed to create your astrological profile. Please try again.';
-      
+
       if (error instanceof ProfileCreationError) {
         switch (error.step) {
           case 'zodiac_calculation':
@@ -65,7 +64,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
             errorMessage = `Profile creation failed: ${error.message}`;
         }
       }
-      
+
       Alert.alert('Profile Creation Error', errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -74,28 +73,23 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         style={styles.keyboardAvoid}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <ScrollView 
+        <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.header}>
-            <Image 
-              source={require('../../assets/icon.png')} 
-              style={styles.logo}
-              resizeMode="contain"
-            />
             <Text style={styles.title}>Welcome to Lucky Day</Text>
             <Text style={styles.subtitle}>
               To personalize your daily fortunes, we need to know a bit about your cosmic blueprint
             </Text>
           </View>
 
-          <BirthDetailsForm 
+          <BirthDetailsForm
             onSubmit={handleSubmit}
             isSubmitting={isSubmitting}
           />
@@ -123,11 +117,6 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 32,
     alignItems: 'center',
-  },
-  logo: {
-    width: 80,
-    height: 80,
-    marginBottom: 20,
   },
   title: {
     fontSize: 28,

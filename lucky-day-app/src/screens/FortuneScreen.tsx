@@ -7,7 +7,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ActivityIndicator,
   TouchableOpacity,
@@ -15,6 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FortuneCookie } from '../components/FortuneCookie';
+import { Text, Heading3, BodyText } from '../components';
 import { fortuneManager, FortuneManagerError, FortuneManagerErrorType } from '../services/fortuneManager';
 import { notificationService } from '../services/notificationService';
 import { AstrologicalProfile } from '../types/astrology';
@@ -74,16 +74,17 @@ export const FortuneScreen: React.FC<FortuneScreenProps> = ({
   const updateFortuneState = useCallback(() => {
     const state = fortuneManager.getFortuneState();
 
-    setCurrentFortune(state.currentFortune);
-    setCanGenerateNew(state.canGenerateNew);
-
-    // Update cookie state based on fortune availability
-    // Use state values directly, not stale component state
-    if (state.currentFortune && !state.canGenerateNew) {
-      setCookieState('opened');
-    } else {
+    // If a new fortune can be generated, clear any old fortune from display
+    // This ensures users see a fresh cookie when the daily window resets at 8am
+    if (state.canGenerateNew) {
+      setCurrentFortune(null);
       setCookieState('closed');
+    } else {
+      setCurrentFortune(state.currentFortune);
+      setCookieState(state.currentFortune ? 'opened' : 'closed');
     }
+
+    setCanGenerateNew(state.canGenerateNew);
 
     // Update countdown timer
     if (state.timeUntilNext > 0) {

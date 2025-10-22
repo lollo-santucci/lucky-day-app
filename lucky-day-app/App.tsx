@@ -13,6 +13,7 @@ import { ProfileManager } from './src/services';
 import { notificationService } from './src/services/notificationService';
 import { AstrologicalProfile } from './src/types/astrology';
 import { theme } from './src/styles';
+import { loadFonts } from './src/utils/fonts';
 
 type AppScreen = 'loading' | 'onboarding' | 'fortune' | 'profile';
 
@@ -20,6 +21,7 @@ export default function App() {
   const [currentScreen, setCurrentScreen] = useState<AppScreen>('loading');
   const [profile, setProfile] = useState<AstrologicalProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [fontsLoaded, setFontsLoaded] = useState(false);
 
   // Initialize app and check for existing profile
   useEffect(() => {
@@ -32,6 +34,10 @@ export default function App() {
   const initializeApp = async () => {
     try {
       setIsLoading(true);
+
+      // Load custom fonts
+      await loadFonts();
+      setFontsLoaded(true);
 
       // Initialize notification service
       await notificationService.initialize();
@@ -148,7 +154,7 @@ export default function App() {
    * Render current screen based on app state
    */
   const renderCurrentScreen = () => {
-    if (isLoading) {
+    if (isLoading || !fontsLoaded) {
       return renderLoadingScreen();
     }
 

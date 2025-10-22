@@ -15,6 +15,9 @@
     "assetBundlePatterns": [
       "**/*"
     ],
+    "fonts": [
+      "./assets/fonts/"
+    ],
     "ios": {
       "supportsTablet": true
     },

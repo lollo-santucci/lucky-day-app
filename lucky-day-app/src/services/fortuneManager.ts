@@ -103,6 +103,17 @@ export class FortuneManager {
     const now = new Date();
     const canGenerateNew = this.canGenerateNewFortune();
     
+    // If a new fortune can be generated and we have an old fortune, clear it
+    // This handles the 8am daily reset scenario where users should see a fresh cookie
+    if (canGenerateNew && this.currentFortune && this.currentFortune.source !== 'connectivity_error') {
+      // Clear the old fortune asynchronously (don't block the UI)
+      this.clearExpiredFortune().catch(error => {
+        console.warn('Failed to clear expired fortune:', error);
+      });
+      // Return state without the old fortune
+      this.currentFortune = null;
+    }
+    
     let timeUntilNext = 0;
     if (!canGenerateNew) {
       const next8am = getNext8amLocalTime(now);

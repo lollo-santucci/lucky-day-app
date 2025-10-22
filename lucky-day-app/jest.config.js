@@ -18,9 +18,10 @@ module.exports = {
   },
   moduleNameMapper: {
     '^react-native$': '<rootDir>/src/__mocks__/react-native.js',
+    '^expo-font$': '<rootDir>/src/__mocks__/expo-font.js',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|react-native-.*)/)',
+    'node_modules/(?!(react-native|@react-native|react-native-.*|expo-.*|@expo/.*)/)',
   ],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
