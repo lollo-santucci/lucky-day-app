@@ -239,11 +239,22 @@ export const FortuneScreen: React.FC<FortuneScreenProps> = ({
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.greeting}>
+        <Heading3 
+          fontFamily="primaryBold" 
+          color="textPrimary" 
+          textAlign="center"
+        >
           Lucky Day, 吉日
-        </Text>
+        </Heading3>
         <TouchableOpacity style={styles.profileButtonContainer} onPress={onViewProfile}>
-          <Text style={styles.profileButton}>{profile.mysticalNickname}</Text>
+          <Text 
+          fontFamily="primary" 
+          fontSize="md" 
+          color="primary" 
+          fontWeight="medium"
+        >
+          {profile.mysticalNickname}
+        </Text>
         </TouchableOpacity>
       </View>
 

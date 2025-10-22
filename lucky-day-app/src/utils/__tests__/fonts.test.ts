@@ -8,7 +8,9 @@ describe('Font Utilities', () => {
   describe('getFontFamily', () => {
     it('should return correct font family', () => {
       expect(getFontFamily('system')).toBe('System');
-      expect(getFontFamily('default')).toBe('System');
+      expect(getFontFamily('default')).toBe('OpenSauceOne-Regular');
+      expect(getFontFamily('primary')).toBe('OpenSauceOne-Regular');
+      expect(getFontFamily('bold')).toBe('OpenSauceOne-Bold');
     });
 
     it('should fallback to system font for invalid family', () => {
@@ -20,7 +22,9 @@ describe('Font Utilities', () => {
   describe('FontFamilies', () => {
     it('should have required font families', () => {
       expect(FontFamilies.system).toBe('System');
-      expect(FontFamilies.default).toBe('System');
+      expect(FontFamilies.default).toBe('OpenSauceOne-Regular');
+      expect(FontFamilies.primary).toBe('OpenSauceOne-Regular');
+      expect(FontFamilies.bold).toBe('OpenSauceOne-Bold');
     });
   });
 

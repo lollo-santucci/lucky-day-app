@@ -12,15 +12,20 @@ import * as Font from 'expo-font';
 export const FontFamilies = {
   // System fonts
   system: 'System',
-  
-  // Add your custom fonts here
-  Light: 'OpenSauceOne-Light',
-  Regular: 'OpenSauceOne-Regular',
-  SemiBold: 'OpenSauceOne-SemiBold',
-  Bold: 'OpenSauceOne-Bold',
-  
-  // Default font
-  default: 'System',
+
+  // OpenSauceOne custom fonts
+  light: 'OpenSauceOne-Light',
+  regular: 'OpenSauceOne-Regular',
+  semibold: 'OpenSauceOne-SemiBold',
+  bold: 'OpenSauceOne-Bold',
+
+  // Semantic font names
+  primary: 'OpenSauceOne-Regular',
+  primaryLight: 'OpenSauceOne-Light',
+  primaryBold: 'OpenSauceOne-Bold',
+
+  // Default font (using OpenSauceOne Regular)
+  default: 'OpenSauceOne-Regular',
 } as const;
 
 /**
@@ -28,8 +33,7 @@ export const FontFamilies = {
  * Maps font family names to their respective font files
  */
 export const fontAssets = {
-  // Add your custom font files here
-  // Example:
+  // OpenSauceOne font files
   'OpenSauceOne-Light': require('../../assets/fonts/OpenSauceOne-Light.ttf'),
   'OpenSauceOne-Regular': require('../../assets/fonts/OpenSauceOne-Regular.ttf'),
   'OpenSauceOne-SemiBold': require('../../assets/fonts/OpenSauceOne-SemiBold.ttf'),
@@ -75,7 +79,7 @@ export function waitForFonts(): Promise<void> {
       resolve();
       return;
     }
-    
+
     // Check if fonts are loaded
     const checkFonts = () => {
       try {
@@ -91,7 +95,7 @@ export function waitForFonts(): Promise<void> {
         resolve();
       }
     };
-    
+
     checkFonts();
   });
 }

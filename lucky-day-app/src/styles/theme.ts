@@ -5,32 +5,39 @@
 
 export const theme = {
   colors: {
-    // Primary Brand Colors
-    primary: '#B83330',      // Jade Red
-    background: '#FAF6F0',   // Paper Ivory
+    // Primary Brand Colors (Updated from Figma)
+    primary: '#F04B16',      // Orange Red
+    background: '#F6F4F0',   // Light Cream
     surface: '#FFFFFF',      // White
-    text: '#222222',         // Ink Black
-    accent: '#F2C879',       // Soft Gold
+    text: '#222222',         // Primary Text (Dark Gray)
+    accent: '#00BF63',       // Green Accent
+    secondary: '#FFB5B1',    // Light Pink Secondary
+    
+    // Text Colors (From Figma)
+    textPrimary: '#222222',     // Primary text color
+    textSecondary: '#8B4B62',   // Secondary text color (muted purple)
+    textWarning: '#F78A59',     // Warning text color (orange)
     
     // Semantic Colors
-    success: '#4CAF50',
-    warning: '#FF9800',
-    error: '#B83330',        // Same as primary for consistency
+    success: '#00BF63',      // Use accent green for success
+    warning: '#F78A59',      // Use warning text color
+    error: '#F04B16',        // Use primary for errors
     info: '#2196F3',
     
     // Neutral Colors
-    textSecondary: '#666666',
     textTertiary: '#888888',
     border: '#E0E0E0',
     borderLight: '#F0F0F0',
     disabled: '#CCCCCC',
     overlay: 'rgba(0, 0, 0, 0.5)',
     
-    // Interactive States
-    primaryLight: '#D64A47',
-    primaryDark: '#8B2825',
-    accentLight: '#F5D699',
-    accentDark: '#E6B85C',
+    // Interactive States (Generated from new colors)
+    primaryLight: '#F26B3A',    // Lighter version of primary
+    primaryDark: '#D63E12',     // Darker version of primary
+    accentLight: '#33CC7F',     // Lighter version of accent
+    accentDark: '#00A055',      // Darker version of accent
+    secondaryLight: '#FFC7C4',  // Lighter version of secondary
+    secondaryDark: '#FF9B96',   // Darker version of secondary
   },
   
   typography: {
@@ -39,14 +46,19 @@ export const theme = {
       // System fonts (fallbacks)
       system: 'System',
       
-      // Custom fonts (add your custom fonts here)
-      // Example: 'CustomFont-Regular', 'CustomFont-Bold', etc.
-      // primary: 'YourCustomFont-Regular',
-      // primaryBold: 'YourCustomFont-Bold',
-      // secondary: 'YourSecondaryFont-Regular',
+      // OpenSauceOne custom fonts
+      light: 'OpenSauceOne-Light',
+      regular: 'OpenSauceOne-Regular',
+      semibold: 'OpenSauceOne-SemiBold',
+      bold: 'OpenSauceOne-Bold',
+      
+      // Semantic font names
+      primary: 'OpenSauceOne-Regular',
+      primaryLight: 'OpenSauceOne-Light',
+      primaryBold: 'OpenSauceOne-Bold',
       
       // Default font family
-      default: 'System', // Change this to your preferred default font
+      default: 'OpenSauceOne-Regular',
     },
     
     // Font Sizes
