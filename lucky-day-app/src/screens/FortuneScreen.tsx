@@ -260,12 +260,20 @@ export const FortuneScreen: React.FC<FortuneScreenProps> = ({
 
         {/* Fortune Cookie */}
         {!error && !isGenerating && (
-          <FortuneCookie
-            state={cookieState}
-            onBreak={handleCookieBreak}
-            fortune={currentFortune || undefined}
-            disabled={!canGenerateNew || isGenerating}
-          />
+          <>
+            <FortuneCookie
+              state={cookieState}
+              onBreak={handleCookieBreak}
+              fortune={currentFortune || undefined}
+              disabled={!canGenerateNew || isGenerating}
+            />
+
+            {/* Divider */}
+            <View style={styles.dividerContainer}>
+              <Text style={styles.dividerText}>幸运饼干</Text>
+              <View style={styles.dividerLine} />
+            </View>
+          </>
         )}
 
         {/* Cooldown State */}
@@ -309,7 +317,7 @@ const createStyles = (screenHeight: number) => StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: theme.colors.background,
-    paddingHorizontal: 20,
+    paddingHorizontal: 40,
   },
   content: {
     flex: 1,
@@ -397,6 +405,23 @@ const createStyles = (screenHeight: number) => StyleSheet.create({
     color: theme.colors.textSecondary,
     textAlign: 'center',
     fontStyle: 'italic',
+  },
+  dividerContainer: {
+    marginTop: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  dividerText: {
+    fontFamily: theme.typography.fontFamily.light,
+    fontSize: theme.typography.fontSize.lg,
+    color: theme.colors.textSecondary,
+    marginRight: 12,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: theme.colors.textSecondary,
   },
 
 });
