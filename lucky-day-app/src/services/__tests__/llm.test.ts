@@ -431,6 +431,79 @@ describe('LLM Service', () => {
     });
   });
 
+  describe('Fortune Actions Generation', () => {
+    const mockProfile: AstrologicalProfile = {
+      zodiac: { animal: 'dragon', element: 'fire', year: 2000 },
+      mysticalNickname: 'Wise Dragon',
+      pillars: {
+        year: { stem: 'Geng', branch: 'Chen', element: 'metal' },
+        month: { stem: 'Wu', branch: 'Yin', element: 'earth' },
+        day: { stem: 'Bing', branch: 'Xu', element: 'fire' },
+        hour: { stem: 'Ren', branch: 'Zi', element: 'water' }
+      },
+      pillarDescriptions: {
+        year: 'Test year description',
+        month: 'Test month description',
+        day: 'Test day description',
+        hour: 'Test hour description'
+      },
+      essenceSummary: 'Test essence summary'
+    };
+
+    test('generateFortuneActions returns luck and unluck actions', async () => {
+      mockCreate.mockResolvedValue({
+        choices: [{
+          message: {
+            content: 'LUCK: Writing, Sharing Tea, Slow Walks\nUNLUCK: Rushing Plans, Arguing, Late Nights'
+          }
+        }]
+      });
+
+      const service = new LLMService({ apiKey: 'test-key' });
+      const actions = await service.generateFortuneActions(mockProfile, 'Today brings new opportunities');
+
+      expect(actions).toBeDefined();
+      expect(actions.luck).toHaveLength(3);
+      expect(actions.unluck).toHaveLength(3);
+      expect(actions.luck).toEqual(['Writing', 'Sharing Tea', 'Slow Walks']);
+      expect(actions.unluck).toEqual(['Rushing Plans', 'Arguing', 'Late Nights']);
+    });
+
+    test('generateFortuneActions handles incomplete responses with fallbacks', async () => {
+      mockCreate.mockResolvedValue({
+        choices: [{
+          message: {
+            content: 'LUCK: Writing\nUNLUCK: Arguing'
+          }
+        }]
+      });
+
+      const service = new LLMService({ apiKey: 'test-key' });
+      const actions = await service.generateFortuneActions(mockProfile, 'Today brings new opportunities');
+
+      expect(actions.luck).toHaveLength(3);
+      expect(actions.unluck).toHaveLength(3);
+      expect(actions.luck[0]).toBe('Writing');
+      expect(actions.unluck[0]).toBe('Arguing');
+    });
+
+    test('generateFortuneActions trims extra actions if more than 3', async () => {
+      mockCreate.mockResolvedValue({
+        choices: [{
+          message: {
+            content: 'LUCK: Writing, Tea, Walks, Extra1, Extra2\nUNLUCK: Plans, Arguing, Nights, Extra3, Extra4'
+          }
+        }]
+      });
+
+      const service = new LLMService({ apiKey: 'test-key' });
+      const actions = await service.generateFortuneActions(mockProfile, 'Today brings new opportunities');
+
+      expect(actions.luck).toHaveLength(3);
+      expect(actions.unluck).toHaveLength(3);
+    });
+  });
+
   describe('Method Signatures', () => {
     test('all specialized methods have correct parameters', () => {
       const service = new LLMService({ apiKey: 'test' });

@@ -189,16 +189,26 @@ export class FortuneManager {
         const message = await llmService.generateFortune(profile, this.previousFortunes);
         const decorativeElements = this.generateDecorativeElements(profile);
         
+        // Generate luck/unluck actions
+        let actions;
+        try {
+          actions = await llmService.generateFortuneActions(profile, message);
+        } catch (error) {
+          console.warn('Failed to generate fortune actions, using fallback:', error);
+          actions = this.generateFallbackActions();
+        }
+        
         fortune = {
           id: this.generateFortuneId(),
           message,
           generatedAt: now,
           expiresAt: calculateFortuneExpiration(now),
           source: 'ai',
-          decorativeElements
+          decorativeElements,
+          actions
         };
 
-        console.log('Successfully generated AI fortune');
+        console.log('Successfully generated AI fortune with actions');
 
       } catch (error) {
         console.warn('LLM fortune generation failed, showing connectivity message:', error);
@@ -400,7 +410,37 @@ export class FortuneManager {
       decorativeElements: {
         ideogram: "📶", // Wi-Fi symbol as ideogram
         signature: "Tech Support Oracle"
-      }
+      },
+      actions: this.generateFallbackActions()
+    };
+  }
+
+  /**
+   * Generate fallback actions when LLM is unavailable
+   */
+  private generateFallbackActions(): { luck: string[]; unluck: string[] } {
+    const luckOptions = [
+      ['Meditation', 'Kind Words', 'New Beginnings'],
+      ['Writing', 'Sharing Tea', 'Slow Walks'],
+      ['Reflection', 'Gratitude', 'Patience'],
+      ['Creativity', 'Listening', 'Simplicity'],
+      ['Learning', 'Helping Others', 'Rest']
+    ];
+
+    const unluckOptions = [
+      ['Hasty Decisions', 'Conflicts', 'Overthinking'],
+      ['Rushing Plans', 'Arguing', 'Late Nights'],
+      ['Impatience', 'Criticism', 'Excess'],
+      ['Doubt', 'Rigidity', 'Isolation'],
+      ['Procrastination', 'Negativity', 'Waste']
+    ];
+
+    // Select random set
+    const randomIndex = Math.floor(Math.random() * luckOptions.length);
+    
+    return {
+      luck: luckOptions[randomIndex],
+      unluck: unluckOptions[randomIndex]
     };
   }
 

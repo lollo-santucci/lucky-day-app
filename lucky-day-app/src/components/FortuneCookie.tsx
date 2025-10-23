@@ -373,6 +373,55 @@ export const FortuneCookie: React.FC<FortuneCookieProps> = ({
         >
           {fortune?.message || 'Your fortune awaits...'}
         </Text>
+
+        {/* Luck and Unluck Actions */}
+        {fortune?.actions && (
+          <View style={styles.actionsContainer}>
+            {/* Luck Section */}
+            <View style={styles.actionColumn}>
+              <Text
+                fontFamily="light"
+                fontSize="sm"
+                color="accent"
+                textAlign="left"
+                style={styles.actionTitle}
+              >
+                阳 - LUCK
+              </Text>
+              <Text
+                fontFamily="light"
+                fontSize="md"
+                color="textPrimary"
+                textAlign="left"
+                style={styles.actionList}
+              >
+                {fortune.actions.luck.join('\n')}
+              </Text>
+            </View>
+
+            {/* Unluck Section */}
+            <View style={styles.actionColumn}>
+              <Text
+                fontFamily="light"
+                fontSize="sm"
+                color="primary"
+                textAlign="left"
+                style={styles.actionTitle}
+              >
+                阴 - UNLUCK
+              </Text>
+              <Text
+                fontFamily="light"
+                fontSize="md"
+                color="textPrimary"
+                textAlign="left"
+                style={styles.actionList}
+              >
+                {fortune.actions.unluck.join('\n')}
+              </Text>
+            </View>
+          </View>
+        )}
       </Animated.View>
     </View>
   );
@@ -394,7 +443,6 @@ const styles = StyleSheet.create({
   },
   cookieContainer: {
     width: '100%',
-    maxWidth: 400,
     height: 300,
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
@@ -482,10 +530,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   fortuneContent: {
-    width: screenWidth,
-    maxWidth: 400,
-    //paddingHorizontal: theme.spacing.xl,
-    //paddingVertical: theme.spacing['lg'],
+    width: '100%',
     alignItems: 'flex-start',
     justifyContent: 'flex-start',
   },
@@ -495,6 +540,22 @@ const styles = StyleSheet.create({
   fortuneMessage: {
     lineHeight: theme.typography.fontSize['4xl'] * 1.2,
     letterSpacing: 0.1,
+  },
+  actionsContainer: {
+    marginTop: theme.spacing['2xl'],
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    gap: theme.spacing.lg,
+  },
+  actionColumn: {
+    // Removed flex: 1 to let columns take only the space they need
+  },
+  actionTitle: {
+    marginBottom: theme.spacing.xs,
+  },
+  actionList: {
+    lineHeight: theme.typography.fontSize.md * 1.4,
   },
 
 });

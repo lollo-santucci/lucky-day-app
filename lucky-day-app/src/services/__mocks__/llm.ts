@@ -7,6 +7,13 @@ export class LLMService {
     return 'Mock fortune message for testing';
   }
 
+  async generateFortuneActions(): Promise<{ luck: string[]; unluck: string[] }> {
+    return {
+      luck: ['Meditation', 'Kind Words', 'New Beginnings'],
+      unluck: ['Hasty Decisions', 'Conflicts', 'Overthinking']
+    };
+  }
+
   async generateMysticalNickname(): Promise<string> {
     return 'Mock Mystical Name';
   }

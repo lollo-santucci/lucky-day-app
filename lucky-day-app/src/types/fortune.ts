@@ -10,6 +10,13 @@ export interface DecorativeElements {
   signature: string;
 }
 
+export interface FortuneActions {
+  /** Three lucky actions to do today */
+  luck: string[];
+  /** Three unlucky actions to avoid today */
+  unluck: string[];
+}
+
 export interface Fortune {
   /** Unique fortune identifier */
   id: string;
@@ -23,6 +30,8 @@ export interface Fortune {
   source: 'ai' | 'connectivity_error';
   /** Decorative elements for display */
   decorativeElements: DecorativeElements;
+  /** Lucky and unlucky actions for the day */
+  actions?: FortuneActions;
 }
 
 export type FortuneSource = Fortune['source'];

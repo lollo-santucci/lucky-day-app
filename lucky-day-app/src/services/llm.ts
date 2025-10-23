@@ -189,6 +189,79 @@ export class LLMService {
 
 
   /**
+   * Generate luck and unluck actions based on the fortune and astrological profile
+   */
+  public async generateFortuneActions(profile: AstrologicalProfile, fortuneMessage: string): Promise<{ luck: string[]; unluck: string[] }> {
+    const systemPrompt = `You are a wise Chinese fortune teller who provides daily guidance on auspicious and inauspicious activities. Based on the person's astrological profile and their fortune, suggest specific actions they should embrace (luck) and avoid (unluck) for the day.`;
+
+    const userPrompt = `Based on this fortune: "${fortuneMessage}"
+
+And these astrological qualities:
+- Zodiac: ${profile.zodiac.animal} (${profile.zodiac.element} element)
+- Mystical nature: ${profile.mysticalNickname}
+
+Generate exactly 3 lucky actions (阳 - LUCK) and 3 unlucky actions (阴 - UNLUCK) for today.
+
+Requirements:
+- Each action should be 1-3 words maximum
+- Actions should be specific, practical activities
+- Lucky actions should align with the fortune's positive energy
+- Unlucky actions should be things to avoid based on the day's energy
+- Use simple, clear language
+- Examples: "Writing", "Sharing Tea", "Slow Walks", "Rushing Plans", "Arguing", "Late Nights"
+
+Format your response exactly as:
+LUCK: [action1], [action2], [action3]
+UNLUCK: [action1], [action2], [action3]`;
+
+    const response = await this.generateContent({
+      systemPrompt,
+      userPrompt,
+      maxTokens: 80,
+      temperature: 0.7
+    });
+
+    return this.parseFortuneActions(response.content);
+  }
+
+  /**
+   * Parse LLM response to extract luck and unluck actions
+   */
+  private parseFortuneActions(response: string): { luck: string[]; unluck: string[] } {
+    const lines = response.split('\n').map(line => line.trim()).filter(line => line);
+    
+    let luck: string[] = [];
+    let unluck: string[] = [];
+
+    for (const line of lines) {
+      if (line.toUpperCase().startsWith('LUCK:')) {
+        const actionsStr = line.substring(5).trim();
+        luck = actionsStr.split(',').map(a => a.trim()).filter(a => a);
+      } else if (line.toUpperCase().startsWith('UNLUCK:')) {
+        const actionsStr = line.substring(7).trim();
+        unluck = actionsStr.split(',').map(a => a.trim()).filter(a => a);
+      }
+    }
+
+    // Ensure we have exactly 3 actions for each, use fallbacks if needed
+    if (luck.length < 3) {
+      const fallbackLuck = ['Meditation', 'Kind Words', 'New Beginnings'];
+      luck = [...luck, ...fallbackLuck].slice(0, 3);
+    } else if (luck.length > 3) {
+      luck = luck.slice(0, 3);
+    }
+
+    if (unluck.length < 3) {
+      const fallbackUnluck = ['Hasty Decisions', 'Conflicts', 'Overthinking'];
+      unluck = [...unluck, ...fallbackUnluck].slice(0, 3);
+    } else if (unluck.length > 3) {
+      unluck = unluck.slice(0, 3);
+    }
+
+    return { luck, unluck };
+  }
+
+  /**
    * Specialized method for generating personalized fortune messages
    * Implements requirements 2.1, 2.2, 2.5 for fortune generation
    */
@@ -198,7 +271,7 @@ export class LLMService {
     
     const systemPrompt = `You are a wise Chinese fortune teller creating daily fortunes. Your messages should be:
 - Reflective, witty, calm, and slightly mystical in tone
-- Maximum 200 characters including spaces
+- Maximum 10 words
 - Positive and inspiring, focusing on opportunities and wisdom
 - Authentic to traditional Chinese fortune cookie wisdom
 - Personalized but not overly specific
@@ -215,7 +288,7 @@ ${previousFortunes && previousFortunes.length > 0 ?
   ''}
 
 Requirements:
-- Exactly 200 characters or less
+- Exactly 10 words or less
 - Reference their zodiac qualities subtly
 - Focus on today's opportunities and wisdom
 - Sound like authentic Chinese fortune cookie wisdom
