@@ -242,7 +242,7 @@ export const FortuneScreen: React.FC<FortuneScreenProps> = ({
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <LogoHorizontal 
+        <LogoHorizontal
           height={600}
           width={230}
         />
@@ -282,10 +282,10 @@ export const FortuneScreen: React.FC<FortuneScreenProps> = ({
       {/* Footer */}
       <View style={styles.footer}>
         <TouchableOpacity onPress={onViewProfile} style={styles.profileButton}>
-          <Text 
-            fontFamily="primary" 
-            fontSize="sm" 
-            color="textSecondary" 
+          <Text
+            fontFamily="primary"
+            fontSize="sm"
+            color="textSecondary"
             textAlign="center"
           >
             {profile.mysticalNickname} • View Profile
