@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FortuneCookie } from '../components/FortuneCookie';
-import { Text, Heading3, BodyText, LogoHorizontal } from '../components';
+import { Text, ProfileSection, LogoHorizontal } from '../components';
 import { fortuneManager, FortuneManagerError, FortuneManagerErrorType } from '../services/fortuneManager';
 import { notificationService } from '../services/notificationService';
 import { AstrologicalProfile } from '../types/astrology';
@@ -52,7 +52,7 @@ export const FortuneScreen: React.FC<FortuneScreenProps> = ({
   useEffect(() => {
     const interval = setInterval(() => {
       updateFortuneState();
-    }, 60000); // Update every minute
+    }, 1000); // Update every second
 
     return () => clearInterval(interval);
   }, []);
@@ -93,11 +93,14 @@ export const FortuneScreen: React.FC<FortuneScreenProps> = ({
     if (state.timeUntilNext > 0) {
       const hours = Math.floor(state.timeUntilNext / (1000 * 60 * 60));
       const minutes = Math.floor((state.timeUntilNext % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((state.timeUntilNext % (1000 * 60)) / 1000);
 
       if (hours > 0) {
-        setTimeUntilNext(`${hours}h ${minutes}m until next fortune`);
+        setTimeUntilNext(`${hours}h ${minutes}m ${seconds}s`);
+      } else if (minutes > 0) {
+        setTimeUntilNext(`${minutes}m ${seconds}s`);
       } else {
-        setTimeUntilNext(`${minutes}m until next fortune`);
+        setTimeUntilNext(`${seconds}s`);
       }
     } else {
       setTimeUntilNext('');
@@ -213,11 +216,7 @@ export const FortuneScreen: React.FC<FortuneScreenProps> = ({
    */
   const renderCooldownState = () => (
     <View style={styles.cooldownContainer}>
-      <Text style={styles.cooldownTitle}>Your fortune awaits</Text>
-      <Text style={styles.cooldownText}>{timeUntilNext}</Text>
-      <Text style={styles.cooldownSubtext}>
-        Come back tomorrow for a new cosmic message
-      </Text>
+      <Text style={styles.cooldownText}>Next Cookie in {timeUntilNext}</Text>
     </View>
   );
 
@@ -239,7 +238,7 @@ export const FortuneScreen: React.FC<FortuneScreenProps> = ({
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { paddingHorizontal: theme.spacing.xl }]}>
       {/* Header */}
       <View style={styles.header}>
         <LogoHorizontal
@@ -275,33 +274,16 @@ export const FortuneScreen: React.FC<FortuneScreenProps> = ({
             </View>
           </>
         )}
-
-        {/* Cooldown State */}
-        {!error && !isGenerating && !canGenerateNew && timeUntilNext && (
-          renderCooldownState()
-        )}
-
-        {/* Connectivity Error Retry */}
-        {!error && !isGenerating && currentFortune?.source === 'connectivity_error' && (
-          renderConnectivityError()
-        )}
       </View>
 
+      {/* Profile Section */}
+      <ProfileSection
+        profile={profile}
+        onPress={onViewProfile}
+      />
       {/* Footer */}
       <View style={styles.footer}>
-        <TouchableOpacity onPress={onViewProfile} style={styles.profileButton}>
-          <Text
-            fontFamily="primary"
-            fontSize="sm"
-            color="textSecondary"
-            textAlign="center"
-          >
-            {profile.mysticalNickname} • View Profile
-          </Text>
-        </TouchableOpacity>
-        <Text style={styles.footerText}>
-          Your daily ritual of inspiration and calm
-        </Text>
+        {renderCooldownState()}
       </View>
     </SafeAreaView>
   );
@@ -317,13 +299,13 @@ const createStyles = (screenHeight: number) => StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: theme.colors.background,
-    paddingHorizontal: 40,
+    paddingBottom: theme.spacing.lg,
   },
   content: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
+    alignItems: 'stretch',
+    //paddingHorizontal: theme.spacing.xl,
   },
   loadingContainer: {
     alignItems: 'center',
@@ -342,7 +324,7 @@ const createStyles = (screenHeight: number) => StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    color: theme.colors.error || '#B83330',
+    color: theme.colors.primary || '#B83330',
     textAlign: 'center',
     marginBottom: 20,
     lineHeight: 24,
@@ -372,8 +354,9 @@ const createStyles = (screenHeight: number) => StyleSheet.create({
     textAlign: 'center',
   },
   cooldownText: {
-    fontSize: 16,
-    color: theme.colors.primary,
+    fontFamily: theme.typography.fontFamily.regular,
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.textSecondary,
     fontWeight: '500',
     marginBottom: 8,
     textAlign: 'center',
@@ -407,10 +390,9 @@ const createStyles = (screenHeight: number) => StyleSheet.create({
     fontStyle: 'italic',
   },
   dividerContainer: {
-    marginTop: 24,
+    marginTop: theme.spacing.base,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
   },
   dividerText: {
     fontFamily: theme.typography.fontFamily.light,

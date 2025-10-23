@@ -353,7 +353,7 @@ export const FortuneCookie: React.FC<FortuneCookieProps> = ({
         <Text
           testID="fortune-header"
           fontFamily="light"
-          fontSize="lg"
+          fontSize="md"
           color="accent"
           textAlign="left"
           style={styles.fortuneHeader}
@@ -364,7 +364,7 @@ export const FortuneCookie: React.FC<FortuneCookieProps> = ({
         {/* Fortune Message */}
         <Text
           testID="fortune-message"
-          fontFamily="semibold"
+          fontFamily="bold"
           fontSize="4xl"
           color="textPrimary"
           textAlign="left"
@@ -388,16 +388,16 @@ export const FortuneCookie: React.FC<FortuneCookieProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: theme.colors.background,
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    //backgroundColor: theme.colors.background,
   },
   cookieContainer: {
-    width: 200,
+    width: '100%',
+    maxWidth: 400,
     height: 300,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
     position: 'relative',
   },
   cookie: {
@@ -482,10 +482,10 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   fortuneContent: {
-    width: screenWidth * 0.9,
+    width: screenWidth,
     maxWidth: 400,
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing['lg'],
+    //paddingHorizontal: theme.spacing.xl,
+    //paddingVertical: theme.spacing['lg'],
     alignItems: 'flex-start',
     justifyContent: 'flex-start',
   },
@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
   },
   fortuneMessage: {
     lineHeight: theme.typography.fontSize['4xl'] * 1.2,
-    letterSpacing: 1,
+    letterSpacing: 0.1,
   },
 
 });
