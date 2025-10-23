@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FortuneCookie } from '../components/FortuneCookie';
-import { Text, Heading3, BodyText } from '../components';
+import { Text, Heading3, BodyText, LogoHorizontal } from '../components';
 import { fortuneManager, FortuneManagerError, FortuneManagerErrorType } from '../services/fortuneManager';
 import { notificationService } from '../services/notificationService';
 import { AstrologicalProfile } from '../types/astrology';
@@ -26,7 +26,7 @@ interface FortuneScreenProps {
   onViewProfile: () => void;
 }
 
-const { width: screenWidth } = Dimensions.get('window');
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 export const FortuneScreen: React.FC<FortuneScreenProps> = ({
   profile,
@@ -39,6 +39,9 @@ export const FortuneScreen: React.FC<FortuneScreenProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [timeUntilNext, setTimeUntilNext] = useState<string>('');
   const [canGenerateNew, setCanGenerateNew] = useState(true);
+
+  // Create styles with screen dimensions
+  const styles = createStyles(screenHeight);
 
   // Initialize fortune manager and load existing fortune
   useEffect(() => {
@@ -239,23 +242,10 @@ export const FortuneScreen: React.FC<FortuneScreenProps> = ({
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Heading3 
-          fontFamily="primaryBold" 
-          color="textPrimary" 
-          textAlign="center"
-        >
-          Lucky Day, 吉日
-        </Heading3>
-        <TouchableOpacity style={styles.profileButtonContainer} onPress={onViewProfile}>
-          <Text 
-          fontFamily="primary" 
-          fontSize="md" 
-          color="primary" 
-          fontWeight="medium"
-        >
-          {profile.mysticalNickname}
-        </Text>
-        </TouchableOpacity>
+        <LogoHorizontal 
+          height={600}
+          width={230}
+        />
       </View>
 
       {/* Main Content */}
@@ -291,6 +281,16 @@ export const FortuneScreen: React.FC<FortuneScreenProps> = ({
 
       {/* Footer */}
       <View style={styles.footer}>
+        <TouchableOpacity onPress={onViewProfile} style={styles.profileButton}>
+          <Text 
+            fontFamily="primary" 
+            fontSize="sm" 
+            color="textSecondary" 
+            textAlign="center"
+          >
+            {profile.mysticalNickname} • View Profile
+          </Text>
+        </TouchableOpacity>
         <Text style={styles.footerText}>
           Your daily ritual of inspiration and calm
         </Text>
@@ -299,34 +299,17 @@ export const FortuneScreen: React.FC<FortuneScreenProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (screenHeight: number) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
   },
   header: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    height: screenHeight / 4, // 1/5 of screen height
+    justifyContent: 'center',
     alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.borderLight,
-  },
-  profileButtonContainer: {
-    padding: 8,
-  },
-  profileButton: {
-    fontSize: 16,
-    color: theme.colors.primary,
-    fontWeight: '500',
-  },
-  greeting: {
-    fontSize: 18,
-    color: theme.colors.text,
-    fontWeight: '600',
-    textAlign: 'center',
-    flex: 1,
+    backgroundColor: theme.colors.background,
+    paddingHorizontal: 20,
   },
   content: {
     flex: 1,
@@ -403,6 +386,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderTopWidth: 1,
     borderTopColor: theme.colors.borderLight,
+  },
+  profileButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginBottom: 8,
   },
   footerText: {
     fontSize: 14,
