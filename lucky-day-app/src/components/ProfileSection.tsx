@@ -52,7 +52,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
       <View style={styles.firstRow}>
         <Text
           fontFamily="bold"
-          fontSize="2xl"
+          fontSize="3xl"
           color="secondary"
           style={styles.nickname}
         >
