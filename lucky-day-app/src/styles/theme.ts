@@ -7,7 +7,7 @@ export const theme = {
   colors: {
     // Primary Brand Colors (Updated from Figma)
     primary: '#F04B16',      // Orange Red
-    background: '#F6F4F0',   // Light Cream
+    background: '#FFF6E4',   // Light Yellow
     surface: '#FFFFFF',      // White
     text: '#222222',         // Primary Text (Dark Gray)
     accent: '#00BF63',       // Green Accent

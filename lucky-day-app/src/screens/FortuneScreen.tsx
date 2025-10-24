@@ -279,14 +279,14 @@ export const FortuneScreen: React.FC<FortuneScreenProps> = ({
               fortune={currentFortune || undefined}
               disabled={!canGenerateNew || isGenerating}
             />
-
-            {/* Divider */}
-            <View style={styles.dividerContainer}>
-              <Text style={styles.dividerText}>幸运饼干</Text>
-              <View style={styles.dividerLine} />
-            </View>
           </>
         )}
+      </View>
+
+      {/* Divider */}
+      <View style={styles.dividerContainer}>
+        <Text style={styles.dividerText}>幸运饼干</Text>
+        <View style={styles.dividerLine} />
       </View>
 
       {/* Profile Section */}
@@ -304,7 +304,7 @@ export const FortuneScreen: React.FC<FortuneScreenProps> = ({
             style={styles.testButton}
             onPress={handleTestReset}
           >
-            <Text style={styles.testButtonText}>🧪 Test 8am Reset</Text>
+            <Text style={styles.testButtonText}>🔄️</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -395,11 +395,10 @@ const createStyles = (screenHeight: number) => StyleSheet.create({
     marginTop: 20,
   },
   footer: {
+    flexDirection: 'row',
     paddingHorizontal: 20,
     paddingVertical: 16,
     alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.borderLight,
   },
   profileButton: {
     paddingVertical: 8,

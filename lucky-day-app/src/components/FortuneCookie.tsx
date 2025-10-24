@@ -365,7 +365,7 @@ export const FortuneCookie: React.FC<FortuneCookieProps> = ({
         <Text
           testID="fortune-message"
           fontFamily="bold"
-          fontSize="4xl"
+          fontSize="3xl"
           color="textPrimary"
           textAlign="left"
           style={styles.fortuneMessage}
@@ -538,11 +538,11 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.md,
   },
   fortuneMessage: {
-    lineHeight: theme.typography.fontSize['4xl'] * 1.2,
+    lineHeight: theme.typography.fontSize['3xl'] * 1.2,
     letterSpacing: 0.1,
   },
   actionsContainer: {
-    marginTop: theme.spacing['2xl'],
+    marginTop: theme.spacing['lg'],
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'flex-start',
