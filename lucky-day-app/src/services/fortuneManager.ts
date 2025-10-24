@@ -81,7 +81,15 @@ export class FortuneManager {
       
       // Load app state to get last fortune date
       const appState = await AppStorage.loadAppState();
-      this.lastFortuneDate = appState?.lastFortuneDate || null;
+      
+      // Ensure lastFortuneDate is a Date object (handle string serialization)
+      if (appState?.lastFortuneDate) {
+        this.lastFortuneDate = appState.lastFortuneDate instanceof Date 
+          ? appState.lastFortuneDate 
+          : new Date(appState.lastFortuneDate);
+      } else {
+        this.lastFortuneDate = null;
+      }
 
       // Clean up expired fortune
       if (this.currentFortune && this.isFortuneExpired(this.currentFortune)) {
@@ -101,17 +109,28 @@ export class FortuneManager {
    */
   public getFortuneState(): FortuneState {
     const now = new Date();
+    
+    // Ensure fortune dates are Date objects if we have a fortune
+    if (this.currentFortune) {
+      this.ensureFortuneDates(this.currentFortune);
+    }
+    
     const canGenerateNew = this.canGenerateNewFortune();
     
-    // If a new fortune can be generated and we have an old fortune, clear it
+    // If a new fortune can be generated and we have an old fortune (not connectivity error), clear it
     // This handles the 8am daily reset scenario where users should see a fresh cookie
-    if (canGenerateNew && this.currentFortune && this.currentFortune.source !== 'connectivity_error') {
-      // Clear the old fortune asynchronously (don't block the UI)
-      this.clearExpiredFortune().catch(error => {
-        console.warn('Failed to clear expired fortune:', error);
-      });
-      // Return state without the old fortune
-      this.currentFortune = null;
+    if (canGenerateNew && this.currentFortune) {
+      // Don't clear connectivity errors - let users retry those
+      if (this.currentFortune.source !== 'connectivity_error') {
+        console.log('Clearing old fortune due to daily reset at 8am');
+        // Clear the old fortune synchronously so the UI gets the updated state immediately
+        this.currentFortune = null;
+        this.lastFortuneDate = null;
+        // Clear from storage asynchronously (don't block the UI)
+        this.clearExpiredFortune().catch(error => {
+          console.warn('Failed to clear expired fortune from storage:', error);
+        });
+      }
     }
     
     let timeUntilNext = 0;
@@ -263,6 +282,9 @@ export class FortuneManager {
       return null;
     }
 
+    // Ensure fortune dates are Date objects (handle string serialization)
+    this.ensureFortuneDates(this.currentFortune);
+
     if (this.isFortuneExpired(this.currentFortune)) {
       // Clean up expired fortune
       this.clearExpiredFortune().catch(error => {
@@ -272,6 +294,18 @@ export class FortuneManager {
     }
 
     return this.currentFortune;
+  }
+
+  /**
+   * Ensure fortune dates are Date objects (handle deserialization)
+   */
+  private ensureFortuneDates(fortune: Fortune): void {
+    if (!(fortune.generatedAt instanceof Date)) {
+      fortune.generatedAt = new Date(fortune.generatedAt);
+    }
+    if (!(fortune.expiresAt instanceof Date)) {
+      fortune.expiresAt = new Date(fortune.expiresAt);
+    }
   }
 
   /**

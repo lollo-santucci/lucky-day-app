@@ -77,14 +77,15 @@ export const FortuneScreen: React.FC<FortuneScreenProps> = ({
   const updateFortuneState = useCallback(() => {
     const state = fortuneManager.getFortuneState();
 
-    // If a new fortune can be generated, clear any old fortune from display
-    // This ensures users see a fresh cookie when the daily window resets at 8am
-    if (state.canGenerateNew) {
+    // If a new fortune can be generated and we currently have a fortune displayed,
+    // clear it to show a fresh cookie (handles 8am daily reset)
+    if (state.canGenerateNew && !state.currentFortune) {
       setCurrentFortune(null);
       setCookieState('closed');
-    } else {
+    } else if (state.currentFortune) {
+      // We have a fortune to display
       setCurrentFortune(state.currentFortune);
-      setCookieState(state.currentFortune ? 'opened' : 'closed');
+      setCookieState('opened');
     }
 
     setCanGenerateNew(state.canGenerateNew);
@@ -105,7 +106,7 @@ export const FortuneScreen: React.FC<FortuneScreenProps> = ({
     } else {
       setTimeUntilNext('');
     }
-  }, []); // Remove dependency on canGenerateNew to avoid stale closure
+  }, []);
 
   /**
    * Handle cookie break - generate new fortune
@@ -180,6 +181,22 @@ export const FortuneScreen: React.FC<FortuneScreenProps> = ({
   const handleRetry = async () => {
     if (currentFortune?.source === 'connectivity_error') {
       await handleCookieBreak();
+    }
+  };
+
+  /**
+   * 🧪 TEST: Simulate 8am reset by clearing the fortune
+   */
+  const handleTestReset = async () => {
+    try {
+      await fortuneManager.clearFortune();
+      setCurrentFortune(null);
+      setCookieState('closed');
+      setCanGenerateNew(true);
+      updateFortuneState();
+      console.log('🧪 TEST: Fortune cleared - simulating 8am reset');
+    } catch (error) {
+      console.error('Failed to clear fortune:', error);
     }
   };
 
@@ -284,6 +301,16 @@ export const FortuneScreen: React.FC<FortuneScreenProps> = ({
       {/* Footer */}
       <View style={styles.footer}>
         {renderCooldownState()}
+        
+        {/* 🧪 TEST BUTTON - Remove before production */}
+        {currentFortune && (
+          <TouchableOpacity
+            style={styles.testButton}
+            onPress={handleTestReset}
+          >
+            <Text style={styles.testButtonText}>🧪 Test 8am Reset</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -404,6 +431,21 @@ const createStyles = (screenHeight: number) => StyleSheet.create({
     flex: 1,
     height: 1,
     backgroundColor: theme.colors.textSecondary,
+  },
+  testButton: {
+    marginTop: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: '#FFE5B4',
+    borderRadius: theme.borderRadius.sm,
+    borderWidth: 1,
+    borderColor: '#FFA500',
+  },
+  testButtonText: {
+    fontSize: 12,
+    color: '#FF8C00',
+    fontWeight: '600',
+    textAlign: 'center',
   },
 
 });
