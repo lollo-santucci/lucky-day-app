@@ -13,6 +13,7 @@ export interface BirthDetails {
     latitude: number;
     longitude: number;
     timezone: string;
+    cityName?: string;
   };
 }
 
@@ -68,4 +69,8 @@ export interface AstrologicalProfile {
   pillarDescriptions: PillarDescriptions;
   /** 3-line zodiac essence summary */
   essenceSummary: string;
+  /** Original birth details */
+  birthDetails: BirthDetails;
+  /** City name for display (optional) */
+  cityName?: string;
 }

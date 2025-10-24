@@ -113,7 +113,9 @@ export class ProfileManager {
         pillars,
         mysticalNickname,
         pillarDescriptions,
-        essenceSummary
+        essenceSummary,
+        birthDetails,
+        cityName: birthDetails.location.cityName,
       };
 
       console.log('Profile creation completed successfully');
@@ -158,12 +160,53 @@ export class ProfileManager {
 
   /**
    * Loads profile from local storage
+   * Handles migration for profiles without birth details or city name
    */
   static async loadProfile(): Promise<AstrologicalProfile | null> {
     try {
       const profile = await AppStorage.loadProfile();
       if (profile) {
         console.log('Profile loaded from storage successfully');
+        
+        let needsSave = false;
+        
+        // Migration: If profile doesn't have birthDetails, add placeholder
+        if (!profile.birthDetails) {
+          console.warn('Profile missing birthDetails, adding placeholder');
+          profile.birthDetails = {
+            date: new Date(profile.zodiac.year, 0, 1), // Use zodiac year as fallback
+            time: null,
+            location: {
+              latitude: 0,
+              longitude: 0,
+              timezone: 'UTC'
+            }
+          };
+          needsSave = true;
+        } else {
+          // Ensure date is a Date object (it may be deserialized as a string)
+          if (typeof profile.birthDetails.date === 'string') {
+            profile.birthDetails.date = new Date(profile.birthDetails.date);
+          }
+        }
+        
+        // Migration: If birthDetails exists but location doesn't have cityName, add it
+        if (profile.birthDetails && profile.birthDetails.location && !profile.birthDetails.location.cityName) {
+          console.warn('Profile location missing cityName, adding placeholder');
+          profile.birthDetails.location.cityName = undefined;
+          needsSave = true;
+        }
+        
+        // Migration: Ensure cityName field exists at profile level
+        if (!profile.hasOwnProperty('cityName')) {
+          profile.cityName = profile.birthDetails?.location?.cityName;
+          needsSave = true;
+        }
+        
+        // Save the migrated profile if needed
+        if (needsSave) {
+          await this.saveProfile(profile);
+        }
       }
       return profile;
     } catch (error) {

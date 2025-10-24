@@ -129,6 +129,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
             latitude: location.latitude,
             longitude: location.longitude,
             timezone: location.timezone,
+            cityName: location.displayName,
         });
     };
 
