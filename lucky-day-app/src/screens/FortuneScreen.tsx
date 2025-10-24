@@ -43,7 +43,7 @@ export const FortuneScreen: React.FC<FortuneScreenProps> = ({
   // Create styles with screen dimensions
   const styles = createStyles(screenHeight);
 
-  // Initialize fortune manager and load existing fortune
+  // Initialize fortune manager and time and load existing fortune
   useEffect(() => {
     initializeFortuneManager();
   }, []);
@@ -90,21 +90,17 @@ export const FortuneScreen: React.FC<FortuneScreenProps> = ({
 
     setCanGenerateNew(state.canGenerateNew);
 
-    // Update countdown timer
-    if (state.timeUntilNext > 0) {
-      const hours = Math.floor(state.timeUntilNext / (1000 * 60 * 60));
-      const minutes = Math.floor((state.timeUntilNext % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((state.timeUntilNext % (1000 * 60)) / 1000);
+    // Always update countdown timer to show time until next 8am
+    const hours = Math.floor(state.timeUntilNext / (1000 * 60 * 60));
+    const minutes = Math.floor((state.timeUntilNext % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((state.timeUntilNext % (1000 * 60)) / 1000);
 
-      if (hours > 0) {
-        setTimeUntilNext(`${hours}h ${minutes}m ${seconds}s`);
-      } else if (minutes > 0) {
-        setTimeUntilNext(`${minutes}m ${seconds}s`);
-      } else {
-        setTimeUntilNext(`${seconds}s`);
-      }
+    if (hours > 0) {
+      setTimeUntilNext(`${hours}h ${minutes}m ${seconds}s`);
+    } else if (minutes > 0) {
+      setTimeUntilNext(`${minutes}m ${seconds}s`);
     } else {
-      setTimeUntilNext('');
+      setTimeUntilNext(`${seconds}s`);
     }
   }, []);
 
@@ -301,7 +297,7 @@ export const FortuneScreen: React.FC<FortuneScreenProps> = ({
       {/* Footer */}
       <View style={styles.footer}>
         {renderCooldownState()}
-        
+
         {/* 🧪 TEST BUTTON - Remove before production */}
         {currentFortune && (
           <TouchableOpacity
@@ -445,6 +441,21 @@ const createStyles = (screenHeight: number) => StyleSheet.create({
     fontSize: 12,
     color: '#FF8C00',
     fontWeight: '600',
+    textAlign: 'center',
+  },
+  inlineCountdownContainer: {
+    marginTop: theme.spacing.lg,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
+  },
+  inlineCountdownText: {
+    fontFamily: theme.typography.fontFamily.regular,
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.textSecondary,
     textAlign: 'center',
   },
 

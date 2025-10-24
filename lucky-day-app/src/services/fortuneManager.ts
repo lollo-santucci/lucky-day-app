@@ -133,11 +133,9 @@ export class FortuneManager {
       }
     }
     
-    let timeUntilNext = 0;
-    if (!canGenerateNew) {
-      const next8am = getNext8amLocalTime(now);
-      timeUntilNext = Math.max(0, next8am.getTime() - now.getTime());
-    }
+    // Always calculate time until next 8am, regardless of whether fortune can be generated
+    const next8am = getNext8amLocalTime(now);
+    const timeUntilNext = Math.max(0, next8am.getTime() - now.getTime());
 
     const state = {
       currentFortune: this.currentFortune,
