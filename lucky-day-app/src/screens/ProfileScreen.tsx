@@ -84,7 +84,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
 
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { paddingHorizontal: theme.spacing['2xl'] }]}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
+    //padding: 20,
     paddingBottom: 40,
   },
   modalContainer: {

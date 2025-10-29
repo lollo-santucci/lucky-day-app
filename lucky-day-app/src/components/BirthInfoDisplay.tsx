@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'flex-start',
-        marginTop: 0,
+        marginTop: -10,
     },
     infoContainer: {
         // Removed flex: 1 to keep content compact

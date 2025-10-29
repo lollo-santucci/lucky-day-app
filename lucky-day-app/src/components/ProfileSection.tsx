@@ -61,7 +61,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
               color="accent"
               style={styles.backButton}
             >
-              ← Cookie
+              ← Fortune Cookie
             </Text>
           </TouchableOpacity>
         </View>
@@ -70,7 +70,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
         <View style={styles.firstRow}>
           <Text
             fontFamily="bold"
-            fontSize="3xl"
+            fontSize="2.5xl"
             color="secondary"
             style={styles.nickname}
           >
@@ -89,7 +89,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
       <View style={styles.firstRow}>
         <Text
           fontFamily="bold"
-          fontSize="3xl"
+          fontSize="2.5xl"
           color="secondary"
           style={styles.nickname}
         >

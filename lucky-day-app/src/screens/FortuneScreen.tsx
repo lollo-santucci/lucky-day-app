@@ -251,7 +251,7 @@ export const FortuneScreen: React.FC<FortuneScreenProps> = ({
   );
 
   return (
-    <SafeAreaView style={[styles.container, { paddingHorizontal: theme.spacing.xl }]}>
+    <SafeAreaView style={[styles.container, { paddingHorizontal: theme.spacing['2xl'] }]}>
       {/* Header */}
       <View style={styles.header}>
         <LogoHorizontal

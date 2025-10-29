@@ -390,7 +390,7 @@ export const FortuneCookie: React.FC<FortuneCookieProps> = ({
               </Text>
               <Text
                 fontFamily="light"
-                fontSize="md"
+                fontSize="base"
                 color="textPrimary"
                 textAlign="left"
                 style={styles.actionList}
@@ -412,7 +412,7 @@ export const FortuneCookie: React.FC<FortuneCookieProps> = ({
               </Text>
               <Text
                 fontFamily="light"
-                fontSize="md"
+                fontSize="base"
                 color="textPrimary"
                 textAlign="left"
                 style={styles.actionList}
@@ -443,8 +443,8 @@ const styles = StyleSheet.create({
   },
   cookieContainer: {
     width: '100%',
-    height: 300,
-    justifyContent: 'flex-start',
+    height: '100%',
+    justifyContent: 'space-between',
     alignItems: 'flex-start',
     position: 'relative',
   },
