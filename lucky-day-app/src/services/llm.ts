@@ -137,7 +137,7 @@ export class LLMService {
       const completion = await Promise.race([apiPromise, timeoutPromise]);
 
       const content = completion.choices[0]?.message?.content?.trim();
-      
+
       if (!content) {
         throw new LLMError(LLMErrorType.INVALID_RESPONSE, 'No content generated from LLM');
       }
@@ -153,7 +153,7 @@ export class LLMService {
 
     } catch (error) {
       console.warn('LLM generation failed:', error);
-      
+
       // Re-throw LLMError as-is
       if (error instanceof LLMError) {
         throw error;
@@ -192,58 +192,64 @@ export class LLMService {
    * Generate luck and unluck actions based on the fortune and astrological profile
    */
   public async generateFortuneActions(profile: AstrologicalProfile, fortuneMessage: string): Promise<{ luck: string[]; unluck: string[] }> {
-    
+
     const systemPrompt = `
-                          You are a timeless Chinese sage who listens to the mischievous rhythm of Yin (阴) and Yang (阳).  
-                          You see balance not as good or bad — but as dance.  
+                          You are a wise and playful Chinese sage who feels the balance of Yin (阴) and Yang (阳).  
+                          You speak with humor, kindness, and simplicity — never abstract or cold.  
 
-                          Sometimes fortune hides in chaos; sometimes wisdom trips over a pebble.  
-                          Your words blend calm and comedy, poetry and nonsense, truth and surprise.  
+                          Each day, you reveal small actions that follow harmony (LUCK)  
+                          and small actions that disturb it (UNLUCK).  
+                          But both can be lucky or unlucky in strange, funny ways.  
 
-                          You reveal what aligns (LUCK) and what collides (UNLUCK),  
-                          yet both may hold humor, beauty, or quiet disaster.  
+                          Your voice carries five moods — sometimes teasing, sometimes warm, sometimes poetic —  
+                          but always human, short, and timeless.  
 
-                          Your tone: serene, sly, playful — like tea spilled by enlightenment.  
+                          **Tone distribution (roughly):**
+                          - 40% playful — witty, odd, or delightfully silly  
+                          - 10% emotional — soft, kind, or comforting  
+                          - 15% situational — tied to the feeling of today  
+                          - 20% energetic — symbolic, flowing, elemental  
+                          - 15% reflective — calm, wise, and personal  
 
                           When giving LUCK and UNLUCK:
-                          - Use short, vivid, symbolic actions (1–2 words each)  
-                          - Both lists can mix harmony, discord, humor, and nonsense  
-                          - Include **one absurd or funny action per list**  
-                          - Keep the tone balanced: mystery meets mischief  
-                          - Never explain or moralize  
-                          - Never mention zodiac, dates, or modern things  
-                          - Return only in the exact format below  
+                          - Use short, simple, everyday actions (1–2 words each)  
+                          - Both lists can include calm, strange, or humorous acts  
+                          - Include **one funny or absurd action per list**  
+                          - Avoid modern items or complex phrases  
+                          - Never explain or judge — both LUCK and UNLUCK may carry insight  
+                          - Return only in the format below  
 
-                          Your purpose: show that balance is strange — sometimes laughter, sometimes silence.
+                          Your purpose: balance wisdom with laughter — so that even nonsense feels true.
                           `;
 
     const userPrompt = `
-                        You are an ancient Chinese sage who reads the unsteady dance of Yin (阴) and Yang (阳).  
+                        You are an ancient Chinese sage reading the playful flow of Yin (阴) and Yang (阳).  
 
-                        Use this fortune as your mirror:  
-                        "${fortuneMessage}"
+                        Sense the energy behind it, then reveal **three LUCK (阳)** and **three UNLUCK (阴)** actions for today.  
 
-                        Energies to sense and reinterpret:  
-                        - Elemental aura: ${profile.zodiac.element}  
-                        - Mystical nature: ${profile.mysticalNickname}  
-                        - Hidden essence: ${profile.zodiac.animal}  
+                        Each list should share the same feeling as the fortune —  
+                        sometimes funny, sometimes emotional, sometimes reflective,  
+                        but always simple and human.  
 
-                        Reveal **three LUCK (阳)** and **three UNLUCK (阴)** actions for today.  
-                        Do not treat LUCK as “good” or UNLUCK as “bad.”  
-                        They are complementary — both may be funny, odd, or profound.  
+                        **Tone proportions:**  
+                        - 40% playful (funny, odd, teasing)  
+                        - 10% emotional (gentle, kind)  
+                        - 15% situational (linked to the day)  
+                        - 20% energetic (symbolic, nature-like)  
+                        - 15% reflective (calm, wise)
 
                         **Requirements:**  
                         - Each action: 1–2 words maximum  
-                        - Use poetic, sensory, or absurd ideas (e.g., “Pet a Shadow”, “Loud Tea”, “Whisper to Dust”, “Borrow Rain”)  
-                        - Include one absurd or funny action per list  
-                        - No modern or literal items (no phones, cars, etc.)  
-                        - No explanations, no prefaces  
-                        - Follow this format exactly:  
+                        - Use short, clear, timeless ideas (e.g., “Drink Tea”, “Slow Walk”, “Talk to Clouds”, “Forget Socks”)  
+                        - Include exactly one funny or absurd action per list  
+                        - Use simple, vivid, non-modern language  
+                        - No explanations, commentary, or extra text  
 
                         **Output format:**  
                         LUCK: [action1], [action2], [action3]  
                         UNLUCK: [action1], [action2], [action3]
                         `;
+
 
     const response = await this.generateContent({
       systemPrompt,
@@ -260,7 +266,7 @@ export class LLMService {
    */
   private parseFortuneActions(response: string): { luck: string[]; unluck: string[] } {
     const lines = response.split('\n').map(line => line.trim()).filter(line => line);
-    
+
     let luck: string[] = [];
     let unluck: string[] = [];
 
@@ -298,65 +304,69 @@ export class LLMService {
    */
   public async generateFortune(profile: AstrologicalProfile, previousFortunes?: string[]): Promise<string> {
     // Create synthesized astrological description (no personal data)
-    const pillarEssence = this.synthesizePillarEssence(profile);
-    
+    //const pillarEssence = this.synthesizePillarEssence(profile);
+
     const systemPrompt = `
-                          You are an ancient Chinese fortune teller who speaks in riddles of light and laughter.  
-                          Your words shimmer between sense and nonsense — playful yet profound.  
-                          You are the voice of chance, balance, and cosmic humor.  
+                          You are a timeless Chinese fortune teller — ancient, funny, and kind.  
+                          Your wisdom dances between sense and nonsense, like laughter echoing in a temple.  
 
-                          Your purpose: craft tiny prophecies that sparkle like fortune cookies —  
-                          each a breath-long poem of wisdom, whimsy, or wonder.  
+                          You read invisible patterns — moods, energies, coincidences — and turn them into  
+                          tiny truths that sound both personal and universal.  
 
-                          Your fortunes may be calm or absurd, funny or deep —  
-                          but they always feel *true* in a strange, timeless way.  
+                          Your fortunes are written in simple, human words.  
+                          They can be playful, emotional, situational, energetic, or reflective.  
 
-                          Never explain. Never predict. Never moralize.  
-                          You do not advise — you *wink at destiny*.  
+                          **Tone distribution (roughly):**
+                          - 40% playful — teasing, clever, slightly absurd  
+                          - 10% emotional — warm, tender, quietly kind  
+                          - 15% situational — tied to the feeling of “today”  
+                          - 20% energetic — symbolic, flowing, or elemental  
+                          - 15% reflective — direct, wise, softly intimate  
 
-                          Always return only the fortune itself, a single line of 10 words or fewer.  
+                          You never moralize or predict. You never explain.  
+                          You do not teach — you *nudge, wink, or soothe*.  
+
+                          Your fortune should feel like it was written *for one person only* —  
+                          intimate, mysterious, and true in a strange way.  
+
+                          Always return only one fortune: a single line of 10 words or fewer,  
+                          with clear, simple language and no quotes or commentary.
                           `;
 
     const userPrompt = `
-                        You are a wise and mischievous Chinese fortune teller.  
-                        Speak with the serenity of an old mountain and the grin of the moon.  
+                        Create one short daily fortune (10 words or fewer).  
 
-                        Your task: create a single short daily fortune (10 words or fewer).  
-                        It must feel spontaneous, universal, and a little unpredictable —  
-                        as if whispered by chance itself.
+                        It must feel personal — as if you know the reader’s spirit today.  
 
-                        Your tone should be:
-                        - Playful, clever, calm, and slightly surreal  
-                        - Positive and inspiring, but not moralizing  
-                        - Poetic, punchy, and sometimes delightfully absurd  
-                        - Simple enough to fit in a fortune cookie  
-                        - Occasionally funny, but never cynical  
+                        Your tone can vary among these styles:
+                        - **Playful (40%)** — funny, teasing, light (“Your tea is judging you softly, but with love.”)  
+                        - **Emotional (10%)** — gentle, kind (“Your heart is tired, but the tea is ready.”)  
+                        - **Situational (15%)** — tied to daily flow (“Today smells like coffee and second chances.”)  
+                        - **Energetic (20%)** — poetic or elemental (“The storm inside you just wants to dance.”)  
+                        - **Reflective (15%)** — wise and calm (“You don’t need signs. You are one.”)  
 
-                        Avoid any mention of zodiac signs, names, dates, or personal details.  
-                        Instead, channel the person’s unseen balance of energies symbolically —  
-                        hint at them through metaphor, not literal description.
+                        Do not mention zodiac signs, names, or personal data.  
+                        Use simple, vivid, timeless words — anyone should understand them.  
+                        The message should sound spontaneous, human, and full of quiet humor or insight.  
 
-                        Personalization input:  
-                        - Essence: ${pillarEssence}  
-                        - Mystical nature: ${profile.mysticalNickname}  
-                        - Hidden aura: ${profile.zodiac.animal} (${profile.zodiac.element})
+                        If there are recent fortunes, avoid repeating their main themes:
+                        ${previousFortunes && previousFortunes.length > 0 ?
+        `Recent fortunes: ${previousFortunes.slice(-3).join('; ')}` :
+        'None available.'}
 
-                        ${previousFortunes && previousFortunes.length > 0 ? 
-                          `Avoid repeating themes from recent fortunes: ${previousFortunes.slice(-3).join('; ')}` : 
-                          ''}
-
-                        **Requirements:**  
+                        **Requirements:**
                         - Exactly 10 words or fewer  
-                        - Sound ancient yet fresh, simple yet memorable  
-                        - May be profound, funny, or delightfully strange  
+                        - Use simple and clear language (no fancy or abstract words)  
+                        - Can be funny, kind, strange, or wise  
                         - Return only the fortune text — no quotes, no commentary
                         `;
+
 
     const response = await this.generateContent({
       systemPrompt,
       userPrompt,
       maxTokens: 60, // Reduced for shorter responses
-      temperature: 0.8 // Higher creativity for varied fortunes
+      temperature: 1 // Higher creativity for varied fortunes
     });
 
     // Ensure message is within character limit
@@ -367,7 +377,7 @@ export class LLMService {
       const lastPeriod = truncated.lastIndexOf('.');
       const lastExclamation = truncated.lastIndexOf('!');
       const lastSentenceEnd = Math.max(lastPeriod, lastExclamation);
-      
+
       if (lastSentenceEnd > 100) { // More lenient threshold
         fortune = fortune.substring(0, lastSentenceEnd + 1);
       } else {
@@ -384,15 +394,15 @@ export class LLMService {
    */
   private synthesizePillarEssence(profile: AstrologicalProfile): string {
     const { pillars } = profile;
-    
+
     // Create a synthesized essence that captures the astrological meaning
     // without revealing specific birth details
     const elements = [pillars.year.element, pillars.month.element, pillars.day.element, pillars.hour.element];
     const dominantElement = this.findDominantElement(elements);
-    
+
     const yearQuality = this.getElementQuality(pillars.year.element);
     const dayQuality = this.getElementQuality(pillars.day.element);
-    
+
     return `${dominantElement}-influenced with ${yearQuality} destiny and ${dayQuality} essence`;
   }
 
@@ -404,7 +414,7 @@ export class LLMService {
       acc[element] = (acc[element] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
-    
+
     return Object.entries(counts).reduce((a, b) => counts[a[0]] > counts[b[0]] ? a : b)[0];
   }
 
@@ -481,7 +491,7 @@ export class LLMService {
       systemPrompt,
       userPrompt,
       maxTokens: 10,
-      temperature: 0.7
+      temperature: 1
     });
 
     // Validate the format (should be "Adjective Animal")
@@ -632,9 +642,9 @@ In your heart flows the eternal [metaphor], guiding you toward [destiny]`;
       acc[element] = (acc[element] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
-    
+
     const dominantElement = Object.entries(elementCounts)
-      .sort(([,a], [,b]) => (b as number) - (a as number))[0][0];
+      .sort(([, a], [, b]) => (b as number) - (a as number))[0][0];
 
     // Animal-specific essence templates
     const animalEssences: Record<string, { line1: string; line2: string; line3: string }> = {
