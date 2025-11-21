@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   section: {
-    marginBottom: 32,
+    marginBottom: 24,
   },
   sectionTitle: {
     fontFamily: theme.typography.fontFamily.light,
@@ -206,8 +206,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     borderRadius: 12,
     alignItems: 'center',
-    marginTop: 24,
-    marginBottom: 16,
+    marginTop: 0,
+    marginBottom: 8,
   },
   submitButtonDisabled: {
     backgroundColor: '#CCCCCC',
@@ -237,11 +237,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 12,
     borderWidth: 1,
-    borderColor: '#B83330',
+    borderColor: theme.colors.primary,
   },
   cancelButtonText: {
-    color: '#B83330',
-    fontSize: 16,
-    fontWeight: '500',
+    color: theme.colors.primary,
+    fontFamily: theme.typography.fontFamily.semibold,
+    fontSize: theme.typography.fontSize.md,
   },
 });
