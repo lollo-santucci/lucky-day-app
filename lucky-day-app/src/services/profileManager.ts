@@ -3,15 +3,8 @@
  * Handles astrological profile creation, management, and storage
  */
 
-import { BirthDetails, AstrologicalProfile, ChineseZodiac, FourPillars, PillarDescriptions } from '../types/astrology';
+import { BirthDetails, AstrologicalProfile } from '../types/astrology';
 import { AppStorage, StorageError } from '../utils/storage';
-import { 
-  calculateChineseZodiac, 
-  calculateFourPillars, 
-  generateMysticalNickname,
-  generatePillarDescriptions,
-  generateEssenceSummary
-} from './astrology';
 
 /**
  * Profile creation error types
@@ -28,92 +21,49 @@ export class ProfileCreationError extends Error {
  */
 export class ProfileManager {
   /**
-   * Creates a complete astrological profile from birth details
+   * Creates a complete astrological profile from birth details using LLM
    * Handles all calculations and error recovery gracefully
    */
   static async createProfile(birthDetails: BirthDetails): Promise<AstrologicalProfile> {
     try {
-      console.log('Starting profile creation for birth details:', {
+      console.log('Starting LLM profile creation for birth details:', {
         date: birthDetails.date.toISOString(),
         time: birthDetails.time,
         location: birthDetails.location
       });
 
-      // Step 1: Calculate Chinese zodiac
-      let zodiac: ChineseZodiac;
-      try {
-        zodiac = calculateChineseZodiac(birthDetails.date);
-        console.log('Chinese zodiac calculated:', zodiac);
-      } catch (error) {
+      // Import LLM service
+      const { llmService } = await import('./llm');
+
+      // Check if LLM service is available
+      if (!llmService.isServiceAvailable()) {
         throw new ProfileCreationError(
-          'Failed to calculate Chinese zodiac',
-          'zodiac_calculation',
-          error instanceof Error ? error : new Error('Unknown zodiac calculation error')
+          'LLM service is not available. Please configure your OpenAI API key.',
+          'llm_unavailable'
         );
       }
 
-      // Step 2: Calculate Four Pillars
-      let pillars: FourPillars;
+      // Generate complete profile using LLM
+      let profileData: Omit<AstrologicalProfile, 'birthDetails' | 'cityName'>;
       try {
-        pillars = calculateFourPillars(birthDetails);
-        console.log('Four Pillars calculated:', pillars);
+        profileData = await llmService.generateChineseAstrologicalProfile(birthDetails);
+        console.log('LLM profile generated successfully');
       } catch (error) {
+        console.error('LLM generation error details:', error);
+        if (error instanceof Error) {
+          console.error('Error message:', error.message);
+          console.error('Error stack:', error.stack);
+        }
         throw new ProfileCreationError(
-          'Failed to calculate Four Pillars of Destiny',
-          'pillars_calculation',
-          error instanceof Error ? error : new Error('Unknown pillars calculation error')
+          'Failed to generate astrological profile with LLM',
+          'llm_generation',
+          error instanceof Error ? error : new Error('Unknown LLM error')
         );
       }
 
-      // Step 3: Generate mystical nickname
-      let mysticalNickname: string;
-      try {
-        mysticalNickname = await generateMysticalNickname(zodiac);
-        console.log('Mystical nickname generated:', mysticalNickname);
-      } catch (error) {
-        console.warn('Failed to generate mystical nickname, using fallback:', error);
-        // Fallback nickname generation
-        mysticalNickname = `Mystical ${zodiac.animal.charAt(0).toUpperCase() + zodiac.animal.slice(1)}`;
-      }
-
-      // Step 4: Generate pillar descriptions
-      let pillarDescriptions: PillarDescriptions;
-      try {
-        pillarDescriptions = await generatePillarDescriptions(pillars);
-        console.log('Pillar descriptions generated');
-      } catch (error) {
-        console.warn('Failed to generate pillar descriptions, using fallback:', error);
-        // Fallback descriptions
-        pillarDescriptions = {
-          year: 'Your destiny flows with the wisdom of ancient traditions, shaped by celestial forces.',
-          month: 'Your environment nurtures growth and opportunity, like fertile ground for your dreams.',
-          day: 'Your essence shines with unique brilliance, a beacon of your true nature.',
-          hour: 'Your inner heart beats with the rhythm of the cosmos, deep and eternal.'
-        };
-      }
-
-      // Step 5: Generate essence summary
-      let essenceSummary: string;
-      try {
-        essenceSummary = await generateEssenceSummary(zodiac, pillars);
-        console.log('Essence summary generated');
-      } catch (error) {
-        console.warn('Failed to generate essence summary, using fallback:', error);
-        // Fallback essence summary
-        essenceSummary = [
-          `Born under the ${zodiac.element} ${zodiac.animal}, you carry ancient wisdom within`,
-          `Your pillars dance between elements, creating harmony in your life's journey`,
-          `In your heart flows the eternal spirit, guiding you toward your true destiny`
-        ].join('\n');
-      }
-
-      // Create the complete profile
+      // Create the complete profile with birth details
       const profile: AstrologicalProfile = {
-        zodiac,
-        pillars,
-        mysticalNickname,
-        pillarDescriptions,
-        essenceSummary,
+        ...profileData,
         birthDetails,
         cityName: birthDetails.location.cityName,
       };
@@ -160,7 +110,7 @@ export class ProfileManager {
 
   /**
    * Loads profile from local storage
-   * Handles migration for profiles without birth details or city name
+   * Handles migration from legacy profile structure to new LLM-based structure
    */
   static async loadProfile(): Promise<AstrologicalProfile | null> {
     try {
@@ -170,37 +120,36 @@ export class ProfileManager {
         
         let needsSave = false;
         
-        // Migration: If profile doesn't have birthDetails, add placeholder
-        if (!profile.birthDetails) {
-          console.warn('Profile missing birthDetails, adding placeholder');
-          profile.birthDetails = {
-            date: new Date(profile.zodiac.year, 0, 1), // Use zodiac year as fallback
-            time: null,
-            location: {
-              latitude: 0,
-              longitude: 0,
-              timezone: 'UTC'
-            }
-          };
-          needsSave = true;
-        } else {
-          // Ensure date is a Date object (it may be deserialized as a string)
-          if (typeof profile.birthDetails.date === 'string') {
-            profile.birthDetails.date = new Date(profile.birthDetails.date);
-          }
+        // Migration: Check if this is a legacy profile (has zodiac/pillars/mysticalNickname)
+        const isLegacyProfile = 'zodiac' in profile && 'pillars' in profile && 'mysticalNickname' in profile;
+        
+        if (isLegacyProfile) {
+          console.warn('Legacy profile detected - user needs to regenerate profile with new system');
+          // Return null to force profile regeneration
+          // This ensures users get the full LLM-generated profile
+          return null;
         }
         
-        // Migration: If birthDetails exists but location doesn't have cityName, add it
-        if (profile.birthDetails && profile.birthDetails.location && !profile.birthDetails.location.cityName) {
-          console.warn('Profile location missing cityName, adding placeholder');
-          profile.birthDetails.location.cityName = undefined;
-          needsSave = true;
+        // Ensure birthDetails exists and date is a Date object
+        if (!profile.birthDetails) {
+          console.warn('Profile missing birthDetails - invalid profile');
+          return null;
+        }
+        
+        if (typeof profile.birthDetails.date === 'string') {
+          profile.birthDetails.date = new Date(profile.birthDetails.date);
         }
         
         // Migration: Ensure cityName field exists at profile level
         if (!profile.hasOwnProperty('cityName')) {
           profile.cityName = profile.birthDetails?.location?.cityName;
           needsSave = true;
+        }
+        
+        // Validate new profile structure
+        if (!profile.main || !profile.elements || !profile.ba_zi || !profile.cosmic_blueprint) {
+          console.warn('Profile missing required fields - invalid profile');
+          return null;
         }
         
         // Save the migrated profile if needed
@@ -283,30 +232,47 @@ export class ProfileManager {
   static validateProfile(profile: AstrologicalProfile): { isValid: boolean; errors: string[] } {
     const errors: string[] = [];
 
-    // Check zodiac
-    if (!profile.zodiac || !profile.zodiac.animal || !profile.zodiac.element) {
-      errors.push('Invalid zodiac information');
+    // Check main section
+    if (!profile.main || !profile.main.animal || !profile.main.element || !profile.main.polarity) {
+      errors.push('Invalid main profile information');
     }
 
-    // Check pillars
-    if (!profile.pillars || !profile.pillars.year || !profile.pillars.month || 
-        !profile.pillars.day || !profile.pillars.hour) {
-      errors.push('Invalid Four Pillars information');
+    if (!profile.main?.identity_title || profile.main.identity_title.trim().length === 0) {
+      errors.push('Missing identity title');
     }
 
-    // Check required text fields
-    if (!profile.mysticalNickname || profile.mysticalNickname.trim().length === 0) {
-      errors.push('Missing mystical nickname');
+    if (!profile.main?.identity_description || profile.main.identity_description.trim().length === 0) {
+      errors.push('Missing identity description');
     }
 
-    if (!profile.pillarDescriptions || 
-        !profile.pillarDescriptions.year || !profile.pillarDescriptions.month ||
-        !profile.pillarDescriptions.day || !profile.pillarDescriptions.hour) {
-      errors.push('Missing pillar descriptions');
+    if (!Array.isArray(profile.main?.strengths) || profile.main.strengths.length !== 3) {
+      errors.push('Invalid strengths array');
     }
 
-    if (!profile.essenceSummary || profile.essenceSummary.trim().length === 0) {
-      errors.push('Missing essence summary');
+    if (!Array.isArray(profile.main?.weaknesses) || profile.main.weaknesses.length !== 3) {
+      errors.push('Invalid weaknesses array');
+    }
+
+    // Check elements section
+    if (!profile.elements || !profile.elements.element_distribution || !profile.elements.polarity_distribution) {
+      errors.push('Invalid elements information');
+    }
+
+    // Check Ba Zi section
+    if (!profile.ba_zi || !profile.ba_zi.year || !profile.ba_zi.month || 
+        !profile.ba_zi.day || !profile.ba_zi.hour) {
+      errors.push('Invalid Ba Zi (Four Pillars) information');
+    }
+
+    // Check cosmic blueprint
+    if (!profile.cosmic_blueprint || !profile.cosmic_blueprint.full_description || 
+        profile.cosmic_blueprint.full_description.trim().length === 0) {
+      errors.push('Missing cosmic blueprint');
+    }
+
+    // Check birth details
+    if (!profile.birthDetails) {
+      errors.push('Missing birth details');
     }
 
     return {
@@ -366,6 +332,8 @@ export class ProfileManager {
       // Validate the created profile
       const validation = this.validateProfile(profile);
       if (!validation.isValid) {
+        console.error('Profile validation failed with errors:', validation.errors);
+        console.error('Profile structure:', JSON.stringify(profile, null, 2));
         throw new ProfileCreationError(
           `Profile validation failed: ${validation.errors.join(', ')}`,
           'profile_validation'

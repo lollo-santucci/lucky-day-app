@@ -5,7 +5,7 @@
  */
 
 import OpenAI from 'openai';
-import { AstrologicalProfile } from '../types';
+import { AstrologicalProfile, BirthDetails } from '../types';
 
 // LLM Configuration
 interface LLMConfig {
@@ -152,7 +152,9 @@ export class LLMService {
       };
 
     } catch (error) {
-      console.warn('LLM generation failed:', error);
+      console.error('LLM generation failed:', error);
+      console.error('Error type:', typeof error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
 
       // Re-throw LLMError as-is
       if (error instanceof LLMError) {
@@ -162,6 +164,7 @@ export class LLMService {
       // Handle OpenAI specific errors
       if (error && typeof error === 'object' && 'status' in error) {
         const status = (error as any).status;
+        console.error('OpenAI API status:', status);
         if (status === 401 || status === 403) {
           throw new LLMError(LLMErrorType.API_KEY, 'Invalid API key or insufficient permissions', error instanceof Error ? error : undefined);
         }
@@ -176,12 +179,14 @@ export class LLMService {
       // Handle network errors
       if (error && typeof error === 'object' && 'code' in error) {
         const code = (error as any).code;
+        console.error('Network error code:', code);
         if (code === 'ENOTFOUND' || code === 'ECONNREFUSED' || code === 'ETIMEDOUT') {
           throw new LLMError(LLMErrorType.NETWORK, 'Network connection failed', error instanceof Error ? error : undefined);
         }
       }
 
       // Default to unknown error
+      console.error('Throwing unknown error');
       throw new LLMError(LLMErrorType.UNKNOWN, 'Unknown error occurred', error as Error);
     }
   }
@@ -393,15 +398,15 @@ export class LLMService {
    * This creates a privacy-safe summary for LLM input
    */
   private synthesizePillarEssence(profile: AstrologicalProfile): string {
-    const { pillars } = profile;
+    const { ba_zi } = profile;
 
     // Create a synthesized essence that captures the astrological meaning
     // without revealing specific birth details
-    const elements = [pillars.year.element, pillars.month.element, pillars.day.element, pillars.hour.element];
+    const elements = [ba_zi.year.element, ba_zi.month.element, ba_zi.day.element, ba_zi.hour.element];
     const dominantElement = this.findDominantElement(elements);
 
-    const yearQuality = this.getElementQuality(pillars.year.element);
-    const dayQuality = this.getElementQuality(pillars.day.element);
+    const yearQuality = this.getElementQuality(ba_zi.year.element);
+    const dayQuality = this.getElementQuality(ba_zi.day.element);
 
     return `${dominantElement}-influenced with ${yearQuality} destiny and ${dayQuality} essence`;
   }
@@ -663,6 +668,199 @@ In your heart flows the eternal [metaphor], guiding you toward [destiny]`;
     };
 
     return `${essence.line1}\n${essence.line2}\n${essence.line3}`;
+  }
+
+  /**
+   * Generates a complete Chinese astrological profile based on birth details
+   * Returns a comprehensive profile with main elements, Ba Zi, and cosmic blueprint
+   */
+  public async generateChineseAstrologicalProfile(birthDetails: BirthDetails): Promise<Omit<AstrologicalProfile, 'birthDetails' | 'cityName'>> {
+    if (!this.isAvailable) {
+      throw new LLMError(LLMErrorType.API_KEY, 'LLM service is not available - missing API key');
+    }
+
+    const systemPrompt = `You are a collective of master-level Chinese astrologers with deep expertise in Ba Zi (Four Pillars), Yin/Yang theory, and the Five Elements.
+
+Your task is to create a complete Chinese astrological profile based solely on birth information.
+
+You must produce a fully consistent and expert-level analysis that includes:
+1. Main elements (animal, element, polarity, identity)
+2. Element and polarity distributions
+3. Ba Zi (Four Pillars) with detailed descriptions
+4. Cosmic Blueprint narrative
+
+All sections must be internally coherent and aligned with Chinese astrological logic.
+
+CRITICAL REQUIREMENTS:
+- No internal contradictions
+- Every statement must align with the astrological structure
+- Use expert-level reasoning from Ba Zi, Yin/Yang theory, and Five Elements
+- Tone: insightful, evocative, grounded, never fatalistic
+- Mystical but clear, motivating yet realistic
+- Use exact English names: water, wood, fire, metal, earth
+- Polarity: yin or yang
+
+Return ONLY valid JSON with no extra text.`;
+
+    const userPrompt = `Generate a complete Chinese astrological profile for:
+
+Birth Date: ${birthDetails.date.toISOString()}
+Birth Time: ${birthDetails.time || 'unknown'}
+Location: ${birthDetails.location.cityName || 'unknown'} (${birthDetails.location.latitude}, ${birthDetails.location.longitude})
+Timezone: ${birthDetails.location.timezone}
+
+REQUIRED OUTPUT FORMAT (JSON only):
+{
+  "main": {
+    "animal": "string (rat|ox|tiger|rabbit|dragon|snake|horse|goat|monkey|rooster|dog|pig)",
+    "element": "string (water|wood|fire|metal|earth)",
+    "polarity": "string (yin|yang)",
+    "identity_title": "string (e.g., 'The Visionary', 'The Silent Strategist')",
+    "identity_description": "string (3-5 sentences, clear and evocative)",
+    "strengths": ["string", "string", "string"],
+    "weaknesses": ["string", "string", "string"]
+  },
+  "elements": {
+    "element_distribution": {
+      "water": 0,
+      "wood": 0,
+      "fire": 0,
+      "metal": 0,
+      "earth": 0
+    },
+    "polarity_distribution": {
+      "yin": 0,
+      "yang": 0
+    },
+    "element_polarity_description": "string (5-8 sentences explaining how main element and polarity influence emotional style, relational style, decision-making, and approach to challenges)"
+  },
+  "ba_zi": {
+    "year": {
+      "animal": "string",
+      "element": "string",
+      "polarity": "string",
+      "description": "string (represents public image, generational context, outer expression)"
+    },
+    "month": {
+      "animal": "string",
+      "element": "string",
+      "polarity": "string",
+      "description": "string (represents upbringing, environment, practical talents, work style)"
+    },
+    "day": {
+      "animal": "string",
+      "element": "string",
+      "polarity": "string",
+      "description": "string (represents inner self, core personality, deep emotional needs)"
+    },
+    "hour": {
+      "animal": "string",
+      "element": "string",
+      "polarity": "string",
+      "description": "string (represents long-term aspirations, intimate self, future development)"
+    }
+  },
+  "cosmic_blueprint": {
+    "full_description": "string (3-6 paragraphs integrating all elements: main animal+element+polarity, element distribution, yin/yang balance, all Four Pillars, life potential, challenges, inner resources, emotional themes, long-term growth patterns)"
+  }
+}
+
+REQUIREMENTS:
+- Element distribution percentages must sum to exactly 100
+- Polarity distribution percentages must sum to exactly 100
+- All descriptions must be coherent with each other
+- Use traditional Ba Zi meanings for each pillar
+- Avoid generic statements
+- Be precise, structured, and expert-level
+- Return ONLY the JSON object, no markdown, no extra text`;
+
+    // Use a longer timeout for profile generation (45 seconds)
+    // Profile generation requires more tokens and takes longer
+    const originalTimeout = this.config.timeout;
+    this.config.timeout = 45000; // 45 seconds
+    
+    try {
+      const response = await this.generateContent({
+        systemPrompt,
+        userPrompt,
+        maxTokens: 2000,
+        temperature: 0.7
+      });
+
+      // Parse and validate the JSON response
+      let profile;
+      try {
+        // Strip markdown code blocks if present
+        let jsonContent = response.content.trim();
+        
+        // Remove markdown code blocks (```json ... ``` or ``` ... ```)
+        jsonContent = jsonContent.replace(/^```(?:json)?\s*/g, '').replace(/\s*```$/g, '');
+        
+        console.log('Cleaned JSON content (first 200 chars):', jsonContent.substring(0, 200));
+        
+        profile = JSON.parse(jsonContent);
+      } catch (parseError) {
+        console.error('Failed to parse LLM response:', response.content);
+        console.error('Parse error:', parseError);
+        throw new LLMError(LLMErrorType.INVALID_RESPONSE, 'Failed to parse LLM response as JSON', parseError as Error);
+      }
+      
+      // Validate structure
+      if (!profile.main || !profile.elements || !profile.ba_zi || !profile.cosmic_blueprint) {
+        console.error('Invalid profile structure:', JSON.stringify(profile, null, 2));
+        throw new LLMError(LLMErrorType.INVALID_RESPONSE, 'Invalid profile structure returned from LLM');
+      }
+
+      // Validate element distribution sums to 100
+      const elementSum = Object.values(profile.elements.element_distribution).reduce((a, b) => (a as number) + (b as number), 0) as number;
+      if (Math.abs(elementSum - 100) > 1) {
+        console.warn('Element distribution does not sum to 100, normalizing...');
+        this.normalizeDistribution(profile.elements.element_distribution);
+      }
+
+      // Validate polarity distribution sums to 100
+      const polaritySum = Object.values(profile.elements.polarity_distribution).reduce((a, b) => (a as number) + (b as number), 0) as number;
+      if (Math.abs(polaritySum - 100) > 1) {
+        console.warn('Polarity distribution does not sum to 100, normalizing...');
+        this.normalizeDistribution(profile.elements.polarity_distribution);
+      }
+
+      return profile;
+
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        throw new LLMError(LLMErrorType.INVALID_RESPONSE, 'Failed to parse LLM response as JSON', error);
+      }
+      throw error;
+    } finally {
+      // Always restore original timeout
+      this.config.timeout = originalTimeout;
+    }
+  }
+
+  /**
+   * Normalizes a distribution object to sum to exactly 100
+   */
+  private normalizeDistribution(distribution: Record<string, number>): void {
+    const sum = Object.values(distribution).reduce((a, b) => a + b, 0);
+    if (sum === 0) return;
+
+    const keys = Object.keys(distribution);
+    let normalized = keys.map(key => Math.round((distribution[key] / sum) * 100));
+    
+    // Adjust for rounding errors
+    const normalizedSum = normalized.reduce((a, b) => a + b, 0);
+    if (normalizedSum !== 100) {
+      const diff = 100 - normalizedSum;
+      // Add/subtract the difference to the largest value
+      const maxIndex = normalized.indexOf(Math.max(...normalized));
+      normalized[maxIndex] += diff;
+    }
+
+    // Update the distribution
+    keys.forEach((key, index) => {
+      distribution[key] = normalized[index];
+    });
   }
 
   /**

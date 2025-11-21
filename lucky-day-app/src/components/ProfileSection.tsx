@@ -46,7 +46,8 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
   onPress,
   variant = 'default',
 }) => {
-  const animalIcon = getAnimalIcon(profile.zodiac.animal);
+  const animalIcon = getAnimalIcon(profile.main.animal);
+  const mysticalNickname = profile.main.identity_title;
 
   if (variant === 'profile') {
     // Profile screen variant: back button on first row, no second row
@@ -74,7 +75,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
             color="secondary"
             style={styles.nickname}
           >
-            {profile.mysticalNickname}
+            {mysticalNickname}
           </Text>
           <Image source={animalIcon} style={styles.animalIcon} resizeMode="contain" />
         </View>
@@ -93,7 +94,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
           color="secondary"
           style={styles.nickname}
         >
-          {profile.mysticalNickname}
+          {mysticalNickname}
         </Text>
         <Image source={animalIcon} style={styles.animalIcon} resizeMode="contain" />
       </View>

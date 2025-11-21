@@ -12,7 +12,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AstrologicalProfile, BirthDetails } from '../types/astrology';
 import { ProfileManager, ProfileCreationError } from '../services';
 import { theme } from '../styles';
-import { BirthDetailsForm, ProfileSection, BirthInfoDisplay } from '../components';
+import { 
+  BirthDetailsForm, 
+  ProfileSection, 
+  BirthInfoDisplay,
+  InfoCard, 
+  MainProfileCard,
+  ElementBar,
+  PillarCard,
+} from '../components';
 
 interface ProfileScreenProps {
   profile: AstrologicalProfile;
@@ -83,6 +91,14 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
 
 
 
+  const formatBirthDate = () => {
+    const date = currentProfile.birthDetails.date;
+    const day = date.getDate();
+    const month = date.toLocaleString('en-US', { month: 'long' });
+    const year = date.getFullYear();
+    return `${day} ${month} ${year}`;
+  };
+
   return (
     <SafeAreaView style={[styles.container, { paddingHorizontal: theme.spacing['2xl'] }]}>
       <ScrollView
@@ -90,7 +106,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Profile Header with Back Button */}
+        {/* Profile Header */}
         <ProfileSection
           profile={currentProfile}
           onPress={onBack || (() => { })}
@@ -103,6 +119,116 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
           cityName={currentProfile.cityName}
           onEdit={handleEditProfile}
         />
+
+        {/* Main Profile Section */}
+        <MainProfileCard
+          animal={currentProfile.main.animal}
+          element={currentProfile.main.element}
+          polarity={currentProfile.main.polarity}
+          identityTitle={currentProfile.main.identity_title}
+          identityDescription={currentProfile.main.identity_description}
+          strengths={currentProfile.main.strengths}
+          weaknesses={currentProfile.main.weaknesses}
+        />
+
+
+        {/* Elements Section */}
+        <InfoCard title="ELEMENTS">
+          <View style={styles.elementsContainer}>
+            <ElementBar 
+              element="water" 
+              percentage={currentProfile.elements.element_distribution.water} 
+            />
+            <ElementBar 
+              element="wood" 
+              percentage={currentProfile.elements.element_distribution.wood} 
+            />
+            <ElementBar 
+              element="fire" 
+              percentage={currentProfile.elements.element_distribution.fire} 
+            />
+            <ElementBar 
+              element="metal" 
+              percentage={currentProfile.elements.element_distribution.metal} 
+            />
+            <ElementBar 
+              element="earth" 
+              percentage={currentProfile.elements.element_distribution.earth} 
+            />
+            
+            <Text style={styles.elementDescription}>
+              {currentProfile.elements.element_polarity_description}
+            </Text>
+          </View>
+        </InfoCard>
+
+        {/* Ba Zi (Four Pillars) Section */}
+        <InfoCard title="FOUR PILLARS OF DESTINY - BA ZI">
+          <PillarCard
+            type="year"
+            animal={currentProfile.ba_zi.year.animal}
+            element={currentProfile.ba_zi.year.element}
+            polarity={currentProfile.ba_zi.year.polarity}
+            description={currentProfile.ba_zi.year.description}
+          />
+
+          {/* Divider */}
+          <View style={styles.dividerContainer}>
+            <Text style={styles.dividerText}>年</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          <PillarCard
+            type="month"
+            animal={currentProfile.ba_zi.month.animal}
+            element={currentProfile.ba_zi.month.element}
+            polarity={currentProfile.ba_zi.month.polarity}
+            description={currentProfile.ba_zi.month.description}
+          />
+
+          {/* Divider */}
+          <View style={styles.dividerContainer}>
+            <Text style={styles.dividerText}>月</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          <PillarCard
+            type="day"
+            animal={currentProfile.ba_zi.day.animal}
+            element={currentProfile.ba_zi.day.element}
+            polarity={currentProfile.ba_zi.day.polarity}
+            description={currentProfile.ba_zi.day.description}
+          />
+
+          {/* Divider */}
+          <View style={styles.dividerContainer}>
+            <Text style={styles.dividerText}>天</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          <PillarCard
+            type="hour"
+            animal={currentProfile.ba_zi.hour.animal}
+            element={currentProfile.ba_zi.hour.element}
+            polarity={currentProfile.ba_zi.hour.polarity}
+            description={currentProfile.ba_zi.hour.description}
+          />
+
+          {/* Divider */}
+          <View style={styles.dividerContainer}>
+            <Text style={styles.dividerText}>小时</Text>
+            <View style={styles.dividerLine} />
+          </View>
+        </InfoCard>
+
+        {/* Cosmic Blueprint Section */}
+        <InfoCard title="YOUR COSMIC BLUEPRINT">
+          <View style={styles.blueprintContainer}>
+            <Text style={styles.blueprintText}>
+              {currentProfile.cosmic_blueprint.full_description}
+            </Text>
+          </View>
+        </InfoCard>
       </ScrollView>
 
       {/* Edit Profile Modal */}
@@ -145,8 +271,36 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    //padding: 20,
     paddingBottom: 40,
+  },
+  elementsContainer: {
+    //backgroundColor: theme.colors.surface,
+    //borderRadius: theme.borderRadius.lg,
+    //padding: theme.spacing.lg,
+    //borderWidth: 1,
+    //borderColor: theme.colors.borderLight,
+  },
+  elementDescription: {
+    fontSize: theme.typography.fontSize.sm,
+    fontFamily: theme.typography.fontFamily.light,
+    color: theme.colors.textPrimary,
+    lineHeight: theme.typography.fontSize.sm * theme.typography.lineHeight.relaxed,
+    marginTop: theme.spacing.base,
+    fontStyle: 'italic',
+  },
+  blueprintContainer: {
+    //backgroundColor: theme.colors.surface,
+    //borderRadius: theme.borderRadius.lg,
+    //padding: theme.spacing.lg,
+    //borderWidth: 1,
+    //borderColor: theme.colors.borderLight,
+  },
+  blueprintText: {
+    marginTop: 0,
+    fontSize: theme.typography.fontSize.base,
+    fontFamily: theme.typography.fontFamily.light,
+    color: theme.colors.textPrimary,
+    lineHeight: theme.typography.fontSize.sm * theme.typography.lineHeight.loose,
   },
   modalContainer: {
     flex: 1,
@@ -177,5 +331,22 @@ const styles = StyleSheet.create({
   },
   headerSpacer: {
     width: 60,
+  },
+  dividerContainer: {
+    marginTop: theme.spacing.xs,
+    marginBottom: theme.spacing.base,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dividerText: {
+    fontFamily: theme.typography.fontFamily.light,
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.textSecondary,
+    marginRight: 12,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 0.5,
+    backgroundColor: theme.colors.textSecondary,
   },
 });

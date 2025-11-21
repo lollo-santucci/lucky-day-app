@@ -7,7 +7,8 @@ export type {
   PillarData,
   FourPillars,
   PillarDescriptions,
-  AstrologicalProfile
+  AstrologicalProfile,
+  LegacyAstrologicalProfile
 } from './astrology';
 
 // Fortune types

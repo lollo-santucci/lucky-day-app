@@ -8,3 +8,7 @@ export { Text, Heading1, Heading2, Heading3, Heading4, BodyText, SmallText, Capt
 export { LogoHorizontal } from './LogoHorizontal';
 export { ProfileSection } from './ProfileSection';
 export { BirthInfoDisplay } from './BirthInfoDisplay';
+export { ElementBar } from './ElementBar';
+export { PillarCard } from './PillarCard';
+export { InfoCard } from './InfoCard';
+export { MainProfileCard } from './MainProfileCard';

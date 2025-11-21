@@ -514,12 +514,12 @@ export class FortuneManager {
     ];
 
     // Select ideogram (prefer zodiac, fallback to element, then auspicious)
-    const zodiacOptions = zodiacIdeograms[profile.zodiac.animal] || ['福'];
-    const elementOptions = elementIdeograms[profile.zodiac.element] || ['吉'];
+    const zodiacOptions = zodiacIdeograms[profile.main.animal] || ['福'];
+    const elementOptions = elementIdeograms[profile.main.element] || ['吉'];
     
     // Use date-based selection for consistency within the day
     const today = new Date().toDateString();
-    const seed = this.hashString(today + profile.zodiac.animal);
+    const seed = this.hashString(today + profile.main.animal);
     
     const ideogramPool = [...zodiacOptions, ...elementOptions, '福', '吉', '祥', '運'];
     const selectedIdeogram = ideogramPool[seed % ideogramPool.length];
