@@ -7,6 +7,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { pickerStyles } from '../styles/pickerStyles';
+import { theme } from '@/styles';
 
 interface TimePickerProps {
   value: string | null;
@@ -172,7 +173,7 @@ export const TimePicker: React.FC<TimePickerProps> = ({
                       >
                         <Text style={{
                           fontSize: 16,
-                          color: selectedHour === hour ? '#222222' : '#CCCCCC',
+                          color: selectedHour === hour ? theme.colors.textPrimary : theme.colors.disabled,
                           fontWeight: selectedHour === hour ? '600' : '400',
                         }}>
                           {hour.toString().padStart(2, '0')}
@@ -202,7 +203,7 @@ export const TimePicker: React.FC<TimePickerProps> = ({
                       >
                         <Text style={{
                           fontSize: 16,
-                          color: selectedMinute === minute ? '#222222' : '#CCCCCC',
+                          color: selectedMinute === minute ? theme.colors.textPrimary : theme.colors.disabled,
                           fontWeight: selectedMinute === minute ? '600' : '400',
                         }}>
                           {minute.toString().padStart(2, '0')}

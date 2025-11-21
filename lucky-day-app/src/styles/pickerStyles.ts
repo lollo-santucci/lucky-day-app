@@ -4,6 +4,7 @@
  */
 
 import { StyleSheet } from 'react-native';
+import { theme } from '@/styles';
 
 export const pickerStyles = StyleSheet.create({
   // Container
@@ -17,16 +18,16 @@ export const pickerStyles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: '#E0E0E0',
+    borderWidth: 0.2,
+    borderColor: theme.colors.textSecondary,
     borderRadius: 8,
     paddingVertical: 16,
     paddingHorizontal: 16,
   },
   
   pickerButtonFocused: {
-    borderColor: '#B83330',
-    shadowColor: '#B83330',
+    borderColor: theme.colors.textSecondary,
+    shadowColor: theme.colors.textSecondary,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
@@ -34,7 +35,7 @@ export const pickerStyles = StyleSheet.create({
   },
   
   pickerButtonError: {
-    borderColor: '#B83330',
+    borderColor: theme.colors.error,
   },
   
   pickerButtonDisabled: {
@@ -44,29 +45,30 @@ export const pickerStyles = StyleSheet.create({
 
   // Text Styles
   pickerText: {
-    fontSize: 16,
-    color: '#222222', // Ink Black
+    fontFamily: theme.typography.fontFamily.light,
+    fontSize: theme.typography.fontSize.base,
+    color: theme.colors.textPrimary,
   },
   
   pickerTextError: {
-    color: '#B83330', // Jade Red
+    color: theme.colors.error, 
   },
   
   pickerTextDisabled: {
-    color: '#888888',
+    color: theme.colors.disabled,
   },
 
   // Chevron
   chevron: {
     fontSize: 20,
-    color: '#CCCCCC',
+    color: theme.colors.textSecondary,
     transform: [{ rotate: '90deg' }],
   },
 
   // Error Text
   errorText: {
-    color: '#B83330', // Jade Red
-    fontSize: 12,
+    color: theme.colors.error,
+    fontSize: theme.typography.fontSize.sm,
     marginTop: 4,
     marginLeft: 4,
   },
@@ -74,7 +76,7 @@ export const pickerStyles = StyleSheet.create({
   // Modal Styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(139, 75, 98, 0.3)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
@@ -105,21 +107,21 @@ export const pickerStyles = StyleSheet.create({
   },
   
   pickerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#222222',
+    fontFamily: theme.typography.fontFamily.bold,
+    fontSize: theme.typography.fontSize.lg,
+    color: theme.colors.textPrimary,
   },
   
   cancelButton: {
-    color: '#666666',
-    fontSize: 16,
-    fontWeight: '500',
+    fontFamily: theme.typography.fontFamily.regular,
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.disabled,
   },
   
   confirmButton: {
-    color: '#B83330',
-    fontSize: 16,
-    fontWeight: '600',
+    fontFamily: theme.typography.fontFamily.regular,
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.accent,
   },
   
   pickerContent: {
@@ -146,8 +148,8 @@ export const pickerStyles = StyleSheet.create({
   },
   
   checkboxChecked: {
-    backgroundColor: '#B83330', // Jade Red
-    borderColor: '#B83330',
+    backgroundColor: theme.colors.textSecondary, 
+    borderColor: theme.colors.textSecondary,
   },
   
   checkmark: {
@@ -157,15 +159,16 @@ export const pickerStyles = StyleSheet.create({
   },
   
   unknownText: {
-    fontSize: 14,
-    color: '#666666',
+    fontFamily: theme.typography.fontFamily.light,
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.textTertiary,
   },
 
   // Time Picker Specific Styles
   timePreview: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#B83330',
+    fontFamily: theme.typography.fontFamily.bold,
+    fontSize: theme.typography.fontSize.xl,
+    color: theme.colors.textSecondary,
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -181,9 +184,9 @@ export const pickerStyles = StyleSheet.create({
   },
   
   pickerLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#666666',
+    fontFamily: theme.typography.fontFamily.regular,
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.disabled,
     marginBottom: 8,
   },
   
@@ -208,12 +211,14 @@ export const pickerStyles = StyleSheet.create({
   },
   
   pickerItemText: {
-    fontSize: 16,
-    color: '#222222',
+    fontFamily: theme.typography.fontFamily.regular,
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.textPrimary,
   },
   
   pickerItemTextSelected: {
-    color: '#FFFFFF',
-    fontWeight: '600',
+    fontFamily: theme.typography.fontFamily.semibold,
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.disabled,
   },
 });

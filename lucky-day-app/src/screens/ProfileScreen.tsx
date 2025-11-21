@@ -89,16 +89,6 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
     setIsEditModalVisible(false);
   };
 
-
-
-  const formatBirthDate = () => {
-    const date = currentProfile.birthDetails.date;
-    const day = date.getDate();
-    const month = date.toLocaleString('en-US', { month: 'long' });
-    const year = date.getFullYear();
-    return `${day} ${month} ${year}`;
-  };
-
   return (
     <SafeAreaView style={[styles.container, { paddingHorizontal: theme.spacing['2xl'] }]}>
       <ScrollView
@@ -155,7 +145,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
               element="earth" 
               percentage={currentProfile.elements.element_distribution.earth} 
             />
-            
+
             <Text style={styles.elementDescription}>
               {currentProfile.elements.element_polarity_description}
             </Text>

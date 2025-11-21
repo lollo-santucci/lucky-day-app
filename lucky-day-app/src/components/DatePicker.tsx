@@ -7,6 +7,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { pickerStyles } from '../styles/pickerStyles';
+import { theme } from '@/styles';
 
 interface DatePickerProps {
   value: Date;
@@ -141,7 +142,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                       >
                         <Text style={{
                           fontSize: 16,
-                          color: selectedMonth === index ? '#222222' : '#CCCCCC',
+                          color: selectedMonth === index ? theme.colors.textPrimary : theme.colors.disabled,
                           fontWeight: selectedMonth === index ? '600' : '400',
                         }}>
                           {month.substring(0, 3)}
@@ -169,7 +170,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                       >
                         <Text style={{
                           fontSize: 16,
-                          color: selectedDay === day ? '#222222' : '#CCCCCC',
+                          color: selectedDay === day ? theme.colors.textPrimary : theme.colors.disabled,
                           fontWeight: selectedDay === day ? '600' : '400',
                         }}>
                           {day}
@@ -197,7 +198,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                       >
                         <Text style={{
                           fontSize: 16,
-                          color: selectedYear === year ? '#222222' : '#CCCCCC',
+                          color: selectedYear === year ? theme.colors.textPrimary : theme.colors.disabled,
                           fontWeight: selectedYear === year ? '600' : '400',
                         }}>
                           {year}

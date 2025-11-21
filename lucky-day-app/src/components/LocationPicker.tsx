@@ -13,6 +13,7 @@ import * as Location from 'expo-location';
 import { BirthDetails } from '../types';
 import { geocodingService, LocationResult } from '../services/geocoding';
 import { pickerStyles } from '../styles/pickerStyles';
+import { theme } from '@/styles';
 
 interface LocationPickerProps {
     value: BirthDetails['location'];
@@ -243,30 +244,31 @@ const styles = StyleSheet.create({
     searchInput: {
         flex: 1,
         backgroundColor: '#FFFFFF',
-        borderWidth: 2,
-        borderColor: '#E0E0E0',
+        borderWidth: 0.3,
+        borderColor: theme.colors.textSecondary,
         borderRadius: 8,
         paddingVertical: 16,
         paddingHorizontal: 16,
-        fontSize: 16,
-        color: '#222222',
+        fontFamily: theme.typography.fontFamily.light,
+        fontSize: theme.typography.fontSize.md,
+        color: theme.colors.textPrimary,
     },
     searchInputFocused: {
-        borderColor: '#B83330',
-        shadowColor: '#B83330',
+        borderColor: theme.colors.textSecondary,
+        shadowColor: theme.colors.textSecondary,
         shadowOffset: { width: 0, height: 0 },
         shadowOpacity: 0.2,
         shadowRadius: 8,
         elevation: 4,
     },
     searchInputError: {
-        borderColor: '#B83330',
+        borderColor: theme.colors.error,
     },
     currentLocationButton: {
         marginLeft: 12,
         backgroundColor: '#FFFFFF',
-        borderWidth: 2,
-        borderColor: '#E0E0E0',
+        borderWidth: 0.3,
+        borderColor: theme.colors.textSecondary,
         borderRadius: 8,
         paddingVertical: 16,
         paddingHorizontal: 16,
@@ -274,7 +276,9 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     currentLocationText: {
-        fontSize: 18,
+        fontFamily: theme.typography.fontFamily.light,
+        fontSize: theme.typography.fontSize.lg,
+        color: theme.colors.textPrimary,
     },
     loadingContainer: {
         flexDirection: 'row',
@@ -284,18 +288,19 @@ const styles = StyleSheet.create({
     },
     loadingText: {
         marginLeft: 8,
-        color: '#666666',
-        fontSize: 14,
+        fontFamily: theme.typography.fontFamily.light,
+        fontSize: theme.typography.fontSize.lg,
+        color: theme.colors.textPrimary,
     },
     suggestionsContainer: {
         backgroundColor: '#FFFFFF',
         borderRadius: 8,
-        borderWidth: 1,
-        borderColor: '#E0E0E0',
+        borderWidth: 0.3,
+        borderColor: theme.colors.textSecondary,
         marginTop: 4,
         marginBottom: 16,
         maxHeight: 240,
-        shadowColor: '#000',
+        shadowColor: theme.colors.textSecondary,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
@@ -316,42 +321,43 @@ const styles = StyleSheet.create({
         borderBottomWidth: 0,
     },
     suggestionName: {
-        fontSize: 16,
-        color: '#222222',
-        fontWeight: '500',
+        fontFamily: theme.typography.fontFamily.light,
+        fontSize: theme.typography.fontSize.md,
+        color: theme.colors.textPrimary,
     },
     suggestionCountry: {
-        fontSize: 14,
-        color: '#666666',
-        marginTop: 2,
+        fontFamily: theme.typography.fontFamily.light,
+        fontSize: theme.typography.fontSize.sm,
+        color: theme.colors.textPrimary,
     },
     selectedLocationContainer: {
-        backgroundColor: '#F2C879', // Soft Gold (light)
+        backgroundColor: theme.colors.textSecondary, // Soft Gold (light)
         borderRadius: 8,
         padding: 16,
         marginBottom: 16,
     },
     selectedLocationLabel: {
-        fontSize: 12,
-        color: '#666666',
+        fontFamily: theme.typography.fontFamily.light,
+        fontSize: theme.typography.fontSize.sm,
+        color: '#FFFFFF',
         marginBottom: 4,
         textTransform: 'uppercase',
         letterSpacing: 0.5,
     },
     selectedLocationText: {
-        fontSize: 16,
-        color: '#222222',
-        fontWeight: '500',
+        fontFamily: theme.typography.fontFamily.semibold,
+        fontSize: theme.typography.fontSize.md,
+        color: '#FFFFFF',
         marginBottom: 4,
     },
     timezoneText: {
-        fontSize: 12,
-        color: '#666666',
+        fontFamily: theme.typography.fontFamily.light,
+        fontSize: theme.typography.fontSize.xs,
+        color: '#FFFFFF',
     },
     helpText: {
-        fontSize: 12,
-        color: '#888888',
-        lineHeight: 16,
-        fontStyle: 'italic',
+        fontFamily: theme.typography.fontFamily.light,
+        fontSize: theme.typography.fontSize.xs,
+        color: theme.colors.textTertiary,
     },
 });

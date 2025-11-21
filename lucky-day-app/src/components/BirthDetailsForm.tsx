@@ -12,6 +12,7 @@ import { DatePicker } from './DatePicker';
 import { TimePicker } from './TimePicker';
 import { LocationPicker } from './LocationPicker';
 import { validateBirthDetails } from '../types/validation';
+import { theme } from '@/styles';
 
 
 interface BirthDetailsFormProps {
@@ -107,7 +108,7 @@ export const BirthDetailsForm: React.FC<BirthDetailsFormProps> = ({
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Birth Date *</Text>
+          <Text style={styles.sectionTitle}>BIRTH DATE*</Text>
           <Text style={styles.sectionDescription}>
             When were you born? This determines your Chinese zodiac sign.
           </Text>
@@ -119,7 +120,7 @@ export const BirthDetailsForm: React.FC<BirthDetailsFormProps> = ({
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Birth Time</Text>
+          <Text style={styles.sectionTitle}>BIRTH TIME</Text>
           <Text style={styles.sectionDescription}>
             What time were you born? If unknown, we'll use noon for calculations.
           </Text>
@@ -131,7 +132,7 @@ export const BirthDetailsForm: React.FC<BirthDetailsFormProps> = ({
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Birth Location *</Text>
+          <Text style={styles.sectionTitle}>BIRTH LOCATION *</Text>
           <Text style={styles.sectionDescription}>
             Where were you born? This helps us calculate your Four Pillars accurately.
           </Text>
@@ -187,19 +188,20 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#222222', // Ink Black
-    marginBottom: 8,
+    fontFamily: theme.typography.fontFamily.light,
+    fontSize: theme.typography.fontSize.base,
+    color: theme.colors.accent,
+    marginBottom: theme.spacing.sm,
   },
   sectionDescription: {
-    fontSize: 14,
-    color: '#666666',
-    marginBottom: 16,
+    fontFamily: theme.typography.fontFamily.light,
+    fontSize: theme.typography.fontSize.base,
+    color: theme.colors.textPrimary,
+    marginBottom: theme.spacing.md,
     lineHeight: 20,
   },
   submitButton: {
-    backgroundColor: '#B83330', // Jade Red
+    backgroundColor: theme.colors.textSecondary, // Jade Red
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 12,
@@ -212,12 +214,13 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+    fontFamily: theme.typography.fontFamily.semibold,
+    fontSize: theme.typography.fontSize.md,
   },
   disclaimer: {
-    fontSize: 12,
-    color: '#888888',
+    fontFamily: theme.typography.fontFamily.light,
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.textTertiary,
     textAlign: 'center',
     lineHeight: 16,
     paddingHorizontal: 20,
