@@ -124,24 +124,6 @@ export default function App() {
   };
 
   /**
-   * Clear all app data (for debugging)
-   */
-  const handleClearAppData = async () => {
-    try {
-      const { AppStorage } = await import('./src/utils/storage');
-      await AppStorage.clearAllData();
-      console.log('All app data cleared - restarting app...');
-      
-      // Reset app state
-      setProfile(null);
-      setCurrentScreen('onboarding');
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Failed to clear app data:', error);
-    }
-  };
-
-  /**
    * Render loading screen
    */
   const renderLoadingScreen = () => (

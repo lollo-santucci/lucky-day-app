@@ -34,14 +34,6 @@ interface LLMResponse {
   };
 }
 
-// Fortune generation specific interface
-interface FortuneRequest {
-  zodiacSign: string;
-  element: string;
-  pillarEssence: string;
-  previousFortunes?: string[];
-}
-
 // Error types for better error handling
 export enum LLMErrorType {
   TIMEOUT = 'TIMEOUT',
@@ -191,8 +183,6 @@ export class LLMService {
     }
   }
 
-
-
   /**
    * Generate luck and unluck actions based on the fortune and astrological profile
    */
@@ -245,7 +235,7 @@ export class LLMService {
 
                         **Requirements:**  
                         - Each action: 1–2 words maximum  
-                        - Use short, clear, timeless ideas (e.g., “Drink Tea”, “Slow Walk”, “Talk to Clouds”, “Forget Socks”)  
+                        - Use short, clear, timeless ideas (e.g., "Drink Tea", "Slow Walk", "Talk to Clouds", "Forget Socks")  
                         - Include exactly one funny or absurd action per list  
                         - Use simple, vivid, non-modern language  
                         - No explanations, commentary, or extra text  
@@ -305,12 +295,8 @@ export class LLMService {
 
   /**
    * Specialized method for generating personalized fortune messages
-   * Implements requirements 2.1, 2.2, 2.5 for fortune generation
    */
   public async generateFortune(profile: AstrologicalProfile, previousFortunes?: string[]): Promise<string> {
-    // Create synthesized astrological description (no personal data)
-    //const pillarEssence = this.synthesizePillarEssence(profile);
-
     const systemPrompt = `
                           You are a timeless Chinese fortune teller — ancient, funny, and kind.  
                           Your wisdom dances between sense and nonsense, like laughter echoing in a temple.  
@@ -324,7 +310,7 @@ export class LLMService {
                           **Tone distribution (roughly):**
                           - 40% playful — teasing, clever, slightly absurd  
                           - 10% emotional — warm, tender, quietly kind  
-                          - 15% situational — tied to the feeling of “today”  
+                          - 15% situational — tied to the feeling of "today"  
                           - 20% energetic — symbolic, flowing, or elemental  
                           - 15% reflective — direct, wise, softly intimate  
 
@@ -341,14 +327,14 @@ export class LLMService {
     const userPrompt = `
                         Create one short daily fortune (10 words or fewer).  
 
-                        It must feel personal — as if you know the reader’s spirit today.  
+                        It must feel personal — as if you know the reader's spirit today.  
 
                         Your tone can vary among these styles:
-                        - **Playful (40%)** — funny, teasing, light (“Your tea is judging you softly, but with love.”)  
-                        - **Emotional (10%)** — gentle, kind (“Your heart is tired, but the tea is ready.”)  
-                        - **Situational (15%)** — tied to daily flow (“Today smells like coffee and second chances.”)  
-                        - **Energetic (20%)** — poetic or elemental (“The storm inside you just wants to dance.”)  
-                        - **Reflective (15%)** — wise and calm (“You don’t need signs. You are one.”)  
+                        - **Playful (40%)** — funny, teasing, light ("Your tea is judging you softly, but with love.")  
+                        - **Emotional (10%)** — gentle, kind ("Your heart is tired, but the tea is ready.")  
+                        - **Situational (15%)** — tied to daily flow ("Today smells like coffee and second chances.")  
+                        - **Energetic (20%)** — poetic or elemental ("The storm inside you just wants to dance.")  
+                        - **Reflective (15%)** — wise and calm ("You don't need signs. You are one.")  
 
                         Do not mention zodiac signs, names, or personal data.  
                         Use simple, vivid, timeless words — anyone should understand them.  
@@ -356,8 +342,8 @@ export class LLMService {
 
                         If there are recent fortunes, avoid repeating their main themes:
                         ${previousFortunes && previousFortunes.length > 0 ?
-        `Recent fortunes: ${previousFortunes.slice(-3).join('; ')}` :
-        'None available.'}
+                        `Recent fortunes: ${previousFortunes.slice(-3).join('; ')}` :
+                        'None available.'}
 
                         **Requirements:**
                         - Exactly 10 words or fewer  
@@ -394,283 +380,6 @@ export class LLMService {
   }
 
   /**
-   * Synthesize Four Pillars essence into a concise description
-   * This creates a privacy-safe summary for LLM input
-   */
-  private synthesizePillarEssence(profile: AstrologicalProfile): string {
-    const { ba_zi } = profile;
-
-    // Create a synthesized essence that captures the astrological meaning
-    // without revealing specific birth details
-    const elements = [ba_zi.year.element, ba_zi.month.element, ba_zi.day.element, ba_zi.hour.element];
-    const dominantElement = this.findDominantElement(elements);
-
-    const yearQuality = this.getElementQuality(ba_zi.year.element);
-    const dayQuality = this.getElementQuality(ba_zi.day.element);
-
-    return `${dominantElement}-influenced with ${yearQuality} destiny and ${dayQuality} essence`;
-  }
-
-  /**
-   * Find the most frequent element in the Four Pillars
-   */
-  private findDominantElement(elements: string[]): string {
-    const counts = elements.reduce((acc, element) => {
-      acc[element] = (acc[element] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    return Object.entries(counts).reduce((a, b) => counts[a[0]] > counts[b[0]] ? a : b)[0];
-  }
-
-  /**
-   * Get descriptive quality for each element
-   */
-  private getElementQuality(element: string): string {
-    const qualities = {
-      wood: 'growth-oriented',
-      fire: 'passionate',
-      earth: 'grounded',
-      metal: 'structured',
-      water: 'adaptive'
-    };
-    return qualities[element as keyof typeof qualities] || 'balanced';
-  }
-
-  /**
-   * Specialized method for generating mystical nicknames
-   * Always includes the zodiac animal and is in English
-   * Examples: "Generous Pig", "Wise Dragon", "Brave Tiger"
-   */
-  public async generateMysticalNickname(zodiac: { animal: string; element: string; year: number }): Promise<string> {
-    const systemPrompt = `You are an ancient Chinese sage who names spirits according to their hidden balance of elements and destiny.  
-                          Your role is to bestow **two-word mystical nicknames** that sound timeless, symbolic, and full of quiet power.
-
-                          You do not translate astrology — you interpret energy.  
-                          You sense warmth, fluidity, strength, or stillness, and express it through subtle, evocative language.  
-                          Each nickname must feel like it could be written on a silk scroll or whispered over incense.
-
-                          Your tone is calm, poetic, and reverent — never literal, never modern.  
-                          Each name must sound like a small revelation, unique and harmonious, as if divined in the moment.
-
-                          When creating nicknames:
-                          - Use **exactly two English words**: [Adjective] [Animal]  
-                          - The adjective must reflect inner light, virtue, or mystical nature  
-                          - The animal is the person’s zodiac creature, capitalized  
-                          - Draw gentle inspiration from the elemental energy, but never mention the element or zodiac explicitly  
-                          - Choose adjectives that feel rare, elegant, and positive (“Radiant,” “Enduring,” “Celestial,” “Serene,” etc.)  
-                          - Each generation should vary subtly — no single “correct” nickname should repeat
-
-                          Never explain your reasoning.  
-                          Never add punctuation or quotes.  
-                          Return **only** the two-word nickname.
-
-                          Your purpose: to reveal the hidden spirit of the seeker through a single, radiant name.`;
-
-    const userPrompt = `You are a mystical sage who names souls according to the secret harmony of their spirit.
-
-                        Create a **two-word English nickname** for someone born under the Chinese zodiac sign **${zodiac.animal}**, touched by the **${zodiac.element}** element.
-
-                        **Requirements:**
-                        - Exactly **2 words**
-                        - Format: **[Adjective] [Animal]**, where:
-                          - The adjective reflects virtue, temperament, or mystical energy  
-                          - The second word is the zodiac animal, capitalized  
-                        - The result must sound ancient, noble, and slightly otherworldly  
-                        - Draw subtle inspiration from the element (${zodiac.element}) — warmth for Fire, calm for Water, growth for Wood, strength for Metal, steadiness for Earth — but don’t mention the element directly  
-                        - The tone should feel timeless, uplifting, and symbolic  
-                        - Avoid common or dull adjectives; choose words that suggest depth or spirit (e.g., “Radiant,” “Silent,” “Enduring,” “Celestial”)  
-
-                        **Examples:**
-                        - "Generous Pig"  
-                        - "Wise Dragon"  
-                        - "Brave Tiger"  
-                        - "Serene Snake"  
-                        - "Luminous Ox"  
-                        - "Enduring Horse"  
-
-                        **Output Rule:**  
-                        Return **only** the two-word nickname — no punctuation, quotes, or explanation.`;
-
-    const response = await this.generateContent({
-      systemPrompt,
-      userPrompt,
-      maxTokens: 10,
-      temperature: 1
-    });
-
-    // Validate the format (should be "Adjective Animal")
-    const words = response.content.split(' ');
-    if (words.length !== 2) {
-      throw new Error(`Invalid nickname format: ${response.content}`);
-    }
-
-    const [adjective, animalName] = words;
-    const expectedAnimal = zodiac.animal.charAt(0).toUpperCase() + zodiac.animal.slice(1);
-
-    if (animalName !== expectedAnimal) {
-      // If LLM didn't use the correct animal, fix it
-      return `${adjective} ${expectedAnimal}`;
-    }
-
-    return response.content;
-  }
-
-  /**
-   * Generates poetic descriptions for each of the Four Pillars
-   * Each pillar represents a different aspect of destiny and personality
-   */
-  public async generatePillarDescriptions(pillars: { year: any; month: any; day: any; hour: any }): Promise<{ year: string; month: string; day: string; hour: string }> {
-    const systemPrompt = "You are a mystical Chinese astrology expert who creates poetic, meaningful descriptions for the Four Pillars of Destiny (Ba Zi). Each pillar represents a different aspect of a person's destiny and should be described in a mystical, reflective tone.";
-
-    const userPrompt = `Generate poetic descriptions for the Four Pillars of Destiny based on these stem-branch combinations:
-
-Year Pillar (Destiny): ${pillars.year.stem}${pillars.year.branch} (${pillars.year.element})
-Month Pillar (Environment): ${pillars.month.stem}${pillars.month.branch} (${pillars.month.element})
-Day Pillar (Essence): ${pillars.day.stem}${pillars.day.branch} (${pillars.day.element})
-Hour Pillar (Inner Heart): ${pillars.hour.stem}${pillars.hour.branch} (${pillars.hour.element})
-
-Requirements:
-- Each description should be 1-2 sentences
-- Use mystical, poetic language that feels authentic to Chinese philosophy
-- Focus on the meaning and energy of each pillar's role:
-  * Year Pillar: Overall destiny and life path
-  * Month Pillar: Environment and relationships
-  * Day Pillar: Core essence and personality
-  * Hour Pillar: Inner heart and spiritual nature
-- Consider the elements and their interactions
-- Keep descriptions positive and meaningful
-- Write in English
-
-Format your response as:
-Year: [description]
-Month: [description]
-Day: [description]
-Hour: [description]`;
-
-    const response = await this.generateContent({
-      systemPrompt,
-      userPrompt,
-      maxTokens: 300,
-      temperature: 0.8
-    });
-
-    // Parse the response to extract individual descriptions
-    return this.parsePillarDescriptions(response.content);
-  }
-
-  /**
-   * Generates a 3-line zodiac essence summary combining zodiac and pillars
-   */
-  public async generateEssenceSummary(zodiac: { animal: string; element: string; year: number }, pillars: { year: any; month: any; day: any; hour: any }): Promise<string> {
-    const systemPrompt = "You are a mystical Chinese astrology expert who creates beautiful, poetic essence summaries. Create exactly 3 lines that capture the spiritual essence of a person based on their zodiac and Four Pillars.";
-
-    const userPrompt = `Create a 3-line zodiac essence summary for someone with:
-
-Zodiac: ${zodiac.element} ${zodiac.animal} (${zodiac.year})
-Four Pillars: 
-- Year: ${pillars.year.stem}${pillars.year.branch} (${pillars.year.element})
-- Month: ${pillars.month.stem}${pillars.month.branch} (${pillars.month.element})
-- Day: ${pillars.day.stem}${pillars.day.branch} (${pillars.day.element})
-- Hour: ${pillars.hour.stem}${pillars.hour.branch} (${pillars.hour.element})
-
-Requirements:
-- Exactly 3 lines, each line should be poetic and meaningful
-- Incorporate the zodiac animal and element naturally
-- Reference the interplay of the pillar elements
-- Use mystical, beautiful language that feels authentic to Chinese philosophy
-- Each line should flow into the next, creating a cohesive spiritual portrait
-- Keep it positive and inspiring
-- Write in English
-
-Example format:
-Born under the [element] [animal], you carry the wisdom of [concept]
-Your pillars dance between [elements], creating harmony in [aspect]
-In your heart flows the eternal [metaphor], guiding you toward [destiny]`;
-
-    const response = await this.generateContent({
-      systemPrompt,
-      userPrompt,
-      maxTokens: 150,
-      temperature: 0.9
-    });
-
-    // Clean up the response and ensure it's exactly 3 lines
-    const lines = response.content.split('\n')
-      .map(line => line.trim())
-      .filter(line => line.length > 0);
-
-    if (lines.length >= 3) {
-      return lines.slice(0, 3).join('\n');
-    } else {
-      // If LLM didn't provide 3 lines, use fallback
-      return this.generateFallbackEssenceSummary(zodiac, pillars);
-    }
-  }
-
-  /**
-   * Parses LLM response to extract pillar descriptions
-   */
-  private parsePillarDescriptions(response: string): { year: string; month: string; day: string; hour: string } {
-    const lines = response.split('\n').filter(line => line.trim());
-    const descriptions: Partial<{ year: string; month: string; day: string; hour: string }> = {};
-
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (trimmed.startsWith('Year:')) {
-        descriptions.year = trimmed.substring(5).trim();
-      } else if (trimmed.startsWith('Month:')) {
-        descriptions.month = trimmed.substring(6).trim();
-      } else if (trimmed.startsWith('Day:')) {
-        descriptions.day = trimmed.substring(4).trim();
-      } else if (trimmed.startsWith('Hour:')) {
-        descriptions.hour = trimmed.substring(5).trim();
-      }
-    }
-
-    // Ensure all descriptions are present, use fallback if missing
-    return {
-      year: descriptions.year || 'Your destiny flows like a river, shaped by ancient wisdom and future possibilities.',
-      month: descriptions.month || 'Your environment nurtures growth, like fertile soil beneath the changing seasons.',
-      day: descriptions.day || 'Your essence shines with unique light, a star in the constellation of being.',
-      hour: descriptions.hour || 'Your inner heart beats with the rhythm of the cosmos, deep and eternal.'
-    };
-  }
-
-  /**
-   * Fallback essence summary when LLM is unavailable
-   */
-  private generateFallbackEssenceSummary(zodiac: { animal: string; element: string; year: number }, pillars: { year: any; month: any; day: any; hour: any }): string {
-    // Get the dominant elements from pillars
-    const elements = [pillars.year.element, pillars.month.element, pillars.day.element, pillars.hour.element];
-    const elementCounts = elements.reduce((acc, element) => {
-      acc[element] = (acc[element] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    const dominantElement = Object.entries(elementCounts)
-      .sort(([, a], [, b]) => (b as number) - (a as number))[0][0];
-
-    // Animal-specific essence templates
-    const animalEssences: Record<string, { line1: string; line2: string; line3: string }> = {
-      dragon: {
-        line1: `Born under the ${zodiac.element} dragon, you carry the wisdom of transformation and power`,
-        line2: `Your pillars soar between ${dominantElement} and sky, creating harmony in majestic purpose`,
-        line3: `In your heart flows the eternal fire of destiny, guiding you toward legendary greatness`
-      },
-      // Add other animals as needed...
-    };
-
-    const essence = animalEssences[zodiac.animal] || {
-      line1: `Born under the ${zodiac.element} ${zodiac.animal}, you carry ancient wisdom`,
-      line2: `Your pillars dance between ${dominantElement} and spirit, creating harmony`,
-      line3: `In your heart flows the eternal river of destiny, guiding you forward`
-    };
-
-    return `${essence.line1}\n${essence.line2}\n${essence.line3}`;
-  }
-
-  /**
    * Generates a complete Chinese astrological profile based on birth details
    * Returns a comprehensive profile with main elements, Ba Zi, and cosmic blueprint
    */
@@ -681,98 +390,98 @@ In your heart flows the eternal [metaphor], guiding you toward [destiny]`;
 
     const systemPrompt = `You are a collective of master-level Chinese astrologers with deep expertise in Ba Zi (Four Pillars), Yin/Yang theory, and the Five Elements.
 
-Your task is to create a complete Chinese astrological profile based solely on birth information.
+                          Your task is to create a complete Chinese astrological profile based solely on birth information.
 
-You must produce a fully consistent and expert-level analysis that includes:
-1. Main elements (animal, element, polarity, identity)
-2. Element and polarity distributions
-3. Ba Zi (Four Pillars) with detailed descriptions
-4. Cosmic Blueprint narrative
+                          You must produce a fully consistent and expert-level analysis that includes:
+                          1. Main elements (animal, element, polarity, identity)
+                          2. Element and polarity distributions
+                          3. Ba Zi (Four Pillars) with detailed descriptions
+                          4. Cosmic Blueprint narrative
 
-All sections must be internally coherent and aligned with Chinese astrological logic.
+                          All sections must be internally coherent and aligned with Chinese astrological logic.
 
-CRITICAL REQUIREMENTS:
-- No internal contradictions
-- Every statement must align with the astrological structure
-- Use expert-level reasoning from Ba Zi, Yin/Yang theory, and Five Elements
-- Tone: insightful, evocative, grounded, never fatalistic
-- Mystical but clear, motivating yet realistic
-- Use exact English names: water, wood, fire, metal, earth
-- Polarity: yin or yang
+                          CRITICAL REQUIREMENTS:
+                          - No internal contradictions
+                          - Every statement must align with the astrological structure
+                          - Use expert-level reasoning from Ba Zi, Yin/Yang theory, and Five Elements
+                          - Tone: insightful, evocative, grounded, never fatalistic
+                          - Mystical but clear, motivating yet realistic
+                          - Use exact English names: water, wood, fire, metal, earth
+                          - Polarity: yin or yang
 
-Return ONLY valid JSON with no extra text.`;
+                          Return ONLY valid JSON with no extra text.`;
 
     const userPrompt = `Generate a complete Chinese astrological profile for:
 
-Birth Date: ${birthDetails.date.toISOString()}
-Birth Time: ${birthDetails.time || 'unknown'}
-Location: ${birthDetails.location.cityName || 'unknown'} (${birthDetails.location.latitude}, ${birthDetails.location.longitude})
-Timezone: ${birthDetails.location.timezone}
+                        Birth Date: ${birthDetails.date.toISOString()}
+                        Birth Time: ${birthDetails.time || 'unknown'}
+                        Location: ${birthDetails.location.cityName || 'unknown'} (${birthDetails.location.latitude}, ${birthDetails.location.longitude})
+                        Timezone: ${birthDetails.location.timezone}
 
-REQUIRED OUTPUT FORMAT (JSON only):
-{
-  "main": {
-    "animal": "string (rat|ox|tiger|rabbit|dragon|snake|horse|goat|monkey|rooster|dog|pig)",
-    "element": "string (water|wood|fire|metal|earth)",
-    "polarity": "string (yin|yang)",
-    "identity_title": "string (e.g., 'The Visionary', 'The Silent Strategist')",
-    "identity_description": "string (3-5 sentences, clear and evocative)",
-    "strengths": ["string", "string", "string"],
-    "weaknesses": ["string", "string", "string"]
-  },
-  "elements": {
-    "element_distribution": {
-      "water": 0,
-      "wood": 0,
-      "fire": 0,
-      "metal": 0,
-      "earth": 0
-    },
-    "polarity_distribution": {
-      "yin": 0,
-      "yang": 0
-    },
-    "element_polarity_description": "string (5-8 sentences explaining how main element and polarity influence emotional style, relational style, decision-making, and approach to challenges)"
-  },
-  "ba_zi": {
-    "year": {
-      "animal": "string",
-      "element": "string",
-      "polarity": "string",
-      "description": "string (represents public image, generational context, outer expression)"
-    },
-    "month": {
-      "animal": "string",
-      "element": "string",
-      "polarity": "string",
-      "description": "string (represents upbringing, environment, practical talents, work style)"
-    },
-    "day": {
-      "animal": "string",
-      "element": "string",
-      "polarity": "string",
-      "description": "string (represents inner self, core personality, deep emotional needs)"
-    },
-    "hour": {
-      "animal": "string",
-      "element": "string",
-      "polarity": "string",
-      "description": "string (represents long-term aspirations, intimate self, future development)"
-    }
-  },
-  "cosmic_blueprint": {
-    "full_description": "string (3-6 paragraphs integrating all elements: main animal+element+polarity, element distribution, yin/yang balance, all Four Pillars, life potential, challenges, inner resources, emotional themes, long-term growth patterns)"
-  }
-}
+                        REQUIRED OUTPUT FORMAT (JSON only):
+                        {
+                          "main": {
+                            "animal": "string (rat|ox|tiger|rabbit|dragon|snake|horse|goat|monkey|rooster|dog|pig)",
+                            "element": "string (water|wood|fire|metal|earth)",
+                            "polarity": "string (yin|yang)",
+                            "identity_title": "string (e.g., 'The Visionary', 'The Silent Strategist')",
+                            "identity_description": "string (3-5 sentences, clear and evocative)",
+                            "strengths": ["string", "string", "string"],
+                            "weaknesses": ["string", "string", "string"]
+                          },
+                          "elements": {
+                            "element_distribution": {
+                              "water": 0,
+                              "wood": 0,
+                              "fire": 0,
+                              "metal": 0,
+                              "earth": 0
+                            },
+                            "polarity_distribution": {
+                              "yin": 0,
+                              "yang": 0
+                            },
+                            "element_polarity_description": "string (5-8 sentences explaining how main element and polarity influence emotional style, relational style, decision-making, and approach to challenges)"
+                          },
+                          "ba_zi": {
+                            "year": {
+                              "animal": "string",
+                              "element": "string",
+                              "polarity": "string",
+                              "description": "string (represents public image, generational context, outer expression)"
+                            },
+                            "month": {
+                              "animal": "string",
+                              "element": "string",
+                              "polarity": "string",
+                              "description": "string (represents upbringing, environment, practical talents, work style)"
+                            },
+                            "day": {
+                              "animal": "string",
+                              "element": "string",
+                              "polarity": "string",
+                              "description": "string (represents inner self, core personality, deep emotional needs)"
+                            },
+                            "hour": {
+                              "animal": "string",
+                              "element": "string",
+                              "polarity": "string",
+                              "description": "string (represents long-term aspirations, intimate self, future development)"
+                            }
+                          },
+                          "cosmic_blueprint": {
+                            "full_description": "string (3-6 paragraphs integrating all elements: main animal+element+polarity, element distribution, yin/yang balance, all Four Pillars, life potential, challenges, inner resources, emotional themes, long-term growth patterns)"
+                          }
+                        }
 
-REQUIREMENTS:
-- Element distribution percentages must sum to exactly 100
-- Polarity distribution percentages must sum to exactly 100
-- All descriptions must be coherent with each other
-- Use traditional Ba Zi meanings for each pillar
-- Avoid generic statements
-- Be precise, structured, and expert-level
-- Return ONLY the JSON object, no markdown, no extra text`;
+                        REQUIREMENTS:
+                        - Element distribution percentages must sum to exactly 100
+                        - Polarity distribution percentages must sum to exactly 100
+                        - All descriptions must be coherent with each other
+                        - Use traditional Ba Zi meanings for each pillar
+                        - Avoid generic statements
+                        - Be precise, structured, and expert-level
+                        - Return ONLY the JSON object, no markdown, no extra text`;
 
     // Use a longer timeout for profile generation (45 seconds)
     // Profile generation requires more tokens and takes longer
@@ -861,17 +570,6 @@ REQUIREMENTS:
     keys.forEach((key, index) => {
       distribution[key] = normalized[index];
     });
-  }
-
-  /**
-   * Get service statistics (for monitoring/debugging)
-   */
-  public getServiceInfo() {
-    return {
-      isAvailable: this.isAvailable,
-      model: this.config.model,
-      hasApiKey: !!this.config.apiKey
-    };
   }
 }
 

@@ -3,12 +3,7 @@
 // Astrology types
 export type {
   BirthDetails,
-  ChineseZodiac,
-  PillarData,
-  FourPillars,
-  PillarDescriptions,
-  AstrologicalProfile,
-  LegacyAstrologicalProfile
+  AstrologicalProfile
 } from './astrology';
 
 // Fortune types
@@ -29,21 +24,3 @@ export type {
   AppState,
   CookieState
 } from './app';
-
-// Validation types and functions
-export type {
-  ValidationResult
-} from './validation';
-
-export {
-  validateBirthDetails,
-  validateChineseZodiac,
-  validateFourPillars,
-  validateFortune,
-  validateAppState,
-  isBirthDetails,
-  isChineseZodiac,
-  isFourPillars,
-  isFortune,
-  isAppState
-} from './validation';

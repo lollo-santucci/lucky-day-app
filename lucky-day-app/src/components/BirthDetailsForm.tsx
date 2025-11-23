@@ -11,7 +11,6 @@ import { BirthDetails } from '../types/astrology';
 import { DatePicker } from './DatePicker';
 import { TimePicker } from './TimePicker';
 import { LocationPicker } from './LocationPicker';
-import { validateBirthDetails } from '../types/validation';
 import { theme } from '@/styles';
 
 
@@ -65,23 +64,21 @@ export const BirthDetailsForm: React.FC<BirthDetailsFormProps> = ({
   };
 
   const validateForm = (): boolean => {
-    const validation = validateBirthDetails(birthDetails);
+    const newErrors: Record<string, string> = {};
 
-    if (!validation.isValid) {
-      const newErrors: Record<string, string> = {};
+    if (!birthDetails.date) {
+      newErrors.date = 'Birth date is required';
+    }
 
-      if (!birthDetails.date) {
-        newErrors.date = 'Birth date is required';
-      }
+    if (!birthDetails.location.latitude || !birthDetails.location.longitude) {
+      newErrors.location = 'Birth location is required';
+    }
 
-      if (!birthDetails.location.latitude || !birthDetails.location.longitude) {
-        newErrors.location = 'Birth location is required';
-      }
+    if (birthDetails.date && birthDetails.date > new Date()) {
+      newErrors.date = 'Birth date cannot be in the future';
+    }
 
-      if (birthDetails.date && birthDetails.date > new Date()) {
-        newErrors.date = 'Birth date cannot be in the future';
-      }
-
+    if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return false;
     }

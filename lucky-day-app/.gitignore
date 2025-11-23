@@ -36,4 +36,8 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+# TypeScript compiler files (should not be in repo)
+lib/
+bin/
+
 app-example
