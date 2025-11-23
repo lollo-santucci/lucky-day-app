@@ -19,6 +19,7 @@ import {
   InfoCard, 
   MainProfileCard,
   ElementBar,
+  YinYangBar,
   PillarCard,
 } from '../components';
 
@@ -123,7 +124,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
 
 
         {/* Elements Section */}
-        <InfoCard title="ELEMENTS">
+        <InfoCard title="ELEMENTS & POLARITY">
           <View style={styles.elementsContainer}>
             <ElementBar 
               element="water" 
@@ -145,6 +146,8 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
               element="earth" 
               percentage={currentProfile.elements.element_distribution.earth} 
             />
+
+            <YinYangBar yinPercentage={currentProfile.elements.polarity_distribution.yin} yangPercentage={currentProfile.elements.polarity_distribution.yang} />
 
             <Text style={styles.elementDescription}>
               {currentProfile.elements.element_polarity_description}
