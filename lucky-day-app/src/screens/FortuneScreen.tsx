@@ -297,17 +297,17 @@ export const FortuneScreen: React.FC<FortuneScreenProps> = ({
       {/* Footer */}
       <View style={styles.footer}>
         {renderCooldownState()}
-
-        {/* 🧪 TEST BUTTON - Remove before production */}
-        {currentFortune && (
-          <TouchableOpacity
-            style={styles.testButton}
-            onPress={handleTestReset}
-          >
-            <Text style={styles.testButtonText}>🔄️</Text>
-          </TouchableOpacity>
-        )}
       </View>
+
+      {/* 🧪 TEST BUTTON - Only visible in development, positioned absolutely */}
+      {__DEV__ && currentFortune && (
+        <TouchableOpacity
+          style={styles.testButton}
+          onPress={handleTestReset}
+        >
+          <Text style={styles.testButtonText}>🔄️</Text>
+        </TouchableOpacity>
+      )}
     </SafeAreaView>
   );
 };
@@ -395,7 +395,6 @@ const createStyles = (screenHeight: number) => StyleSheet.create({
     marginTop: 20,
   },
   footer: {
-    flexDirection: 'row',
     paddingHorizontal: 20,
     paddingVertical: 16,
     alignItems: 'center',
@@ -428,13 +427,20 @@ const createStyles = (screenHeight: number) => StyleSheet.create({
     backgroundColor: theme.colors.textSecondary,
   },
   testButton: {
-    marginTop: 16,
+    position: 'absolute',
+    bottom: 52,
+    right: 20,
     paddingVertical: 8,
     paddingHorizontal: 16,
-    backgroundColor: '#FFE5B4',
+    backgroundColor: theme.colors.background,
     borderRadius: theme.borderRadius.sm,
     borderWidth: 1,
-    borderColor: '#FFA500',
+    borderColor: theme.colors.textSecondary,
+    shadowColor: theme.colors.textSecondary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   testButtonText: {
     fontSize: 12,
