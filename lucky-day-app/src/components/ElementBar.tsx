@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, ImageSourcePropType } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Image, ImageSourcePropType, TouchableOpacity } from 'react-native';
 import { theme } from '../styles';
 
 export type ElementType = 'water' | 'wood' | 'fire' | 'metal' | 'earth';
@@ -9,23 +9,33 @@ interface ElementBarProps {
   percentage: number;
 }
 
-const ELEMENT_CONFIG: Record<ElementType, { color: string; icon: ImageSourcePropType }> = {
-  water: { color: theme.colors.textSecondary, icon: require('../../assets/icons/water.png') },
-  wood: { color: theme.colors.textSecondary, icon: require('../../assets/icons/wood.png') },
-  fire: { color: theme.colors.textSecondary, icon: require('../../assets/icons/fire.png') },
-  metal: { color: theme.colors.textSecondary, icon: require('../../assets/icons/metal.png') },
-  earth: { color: theme.colors.textSecondary, icon: require('../../assets/icons/earth.png') },
+const ELEMENT_CONFIG: Record<ElementType, { color: string; icon: ImageSourcePropType; name: string }> = {
+  water: { color: theme.colors.textSecondary, icon: require('../../assets/icons/water.png'), name: 'Water' },
+  wood: { color: theme.colors.textSecondary, icon: require('../../assets/icons/wood.png'), name: 'Wood' },
+  fire: { color: theme.colors.textSecondary, icon: require('../../assets/icons/fire.png'), name: 'Fire' },
+  metal: { color: theme.colors.textSecondary, icon: require('../../assets/icons/metal.png'), name: 'Metal' },
+  earth: { color: theme.colors.textSecondary, icon: require('../../assets/icons/earth.png'), name: 'Earth' },
 };
 
 export const ElementBar: React.FC<ElementBarProps> = ({ element, percentage }) => {
   const config = ELEMENT_CONFIG[element];
+  const [showName, setShowName] = useState(false);
   
   return (
     <View style={styles.container}>
       <View style={styles.row}>
         <View style={styles.labelSection}>
-          <Image source={config.icon} style={styles.iconImage} />
-          <Text style={[styles.percentage, {color: config.color}]}>{percentage}%</Text>
+          <TouchableOpacity 
+            onPress={() => setShowName(!showName)}
+            activeOpacity={0.7}
+          >
+            <Image source={config.icon} style={styles.iconImage} />
+          </TouchableOpacity>
+          {showName ? (
+            <Text style={[styles.elementName, {color: config.color}]}>{config.name} {percentage}%</Text>
+          ) : (
+            <Text style={[styles.percentage, {color: config.color}]}>{percentage}%</Text>
+          )}
         </View>
         
         <View style={styles.barBackground}>
@@ -62,6 +72,11 @@ const styles = StyleSheet.create({
     marginEnd: theme.spacing.xs
   },
   percentage: {
+    fontSize: theme.typography.fontSize.sm * 1.1,
+    fontFamily: theme.typography.fontFamily.regular,
+    color: theme.colors.textSecondary,
+  },
+  elementName: {
     fontSize: theme.typography.fontSize.sm * 1.1,
     fontFamily: theme.typography.fontFamily.regular,
     color: theme.colors.textSecondary,

@@ -9,6 +9,7 @@ export { LogoHorizontal } from './LogoHorizontal';
 export { ProfileSection } from './ProfileSection';
 export { BirthInfoDisplay } from './BirthInfoDisplay';
 export { ElementBar } from './ElementBar';
+export { YinYangBar } from './YinYangBar';
 export { PillarCard } from './PillarCard';
 export { InfoCard } from './InfoCard';
 export { MainProfileCard } from './MainProfileCard';

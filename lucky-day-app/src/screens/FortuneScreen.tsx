@@ -318,11 +318,11 @@ const createStyles = (screenHeight: number) => StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   header: {
-    height: screenHeight / 4, // 1/5 of screen height
+    height: screenHeight / 5, // 1/5 of screen height
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: theme.colors.background,
-    paddingBottom: theme.spacing.lg,
+    paddingBottom: 0,
   },
   content: {
     flex: 1,

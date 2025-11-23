@@ -10,6 +10,7 @@ import {
   Animated,
   Dimensions,
   StyleSheet,
+  Image,
 } from 'react-native';
 import { Audio } from 'expo-av';
 import { theme } from '../styles/theme';
@@ -36,6 +37,7 @@ export const FortuneCookie: React.FC<FortuneCookieProps> = ({
   const crackAnimation = useRef(new Animated.Value(0)).current;
   const breakAnimation = useRef(new Animated.Value(0)).current;
   const ticketAnimation = useRef(new Animated.Value(0)).current;
+  const wiggleAnimation = useRef(new Animated.Value(0)).current;
   const particleAnimations = useRef(
     Array.from({ length: 8 }, () => ({
       x: new Animated.Value(0),
@@ -165,6 +167,51 @@ export const FortuneCookie: React.FC<FortuneCookieProps> = ({
     });
   };
 
+  // Wiggle animation loop - runs every 2 seconds when cookie is closed
+  useEffect(() => {
+    if (state === 'closed' && !disabled) {
+      const wiggleLoop = () => {
+        Animated.sequence([
+          Animated.timing(wiggleAnimation, {
+            toValue: 1,
+            duration: 100,
+            useNativeDriver: true,
+          }),
+          Animated.timing(wiggleAnimation, {
+            toValue: -1,
+            duration: 100,
+            useNativeDriver: true,
+          }),
+          Animated.timing(wiggleAnimation, {
+            toValue: 1,
+            duration: 100,
+            useNativeDriver: true,
+          }),
+          Animated.timing(wiggleAnimation, {
+            toValue: 0,
+            duration: 100,
+            useNativeDriver: true,
+          }),
+          Animated.delay(1600), // Wait 1.6s to complete 2s cycle
+        ]).start(() => {
+          if (state === 'closed' && !disabled) {
+            wiggleLoop();
+          }
+        });
+      };
+      
+      // Start the wiggle loop after a short delay
+      const timeout = setTimeout(wiggleLoop, 500);
+      
+      return () => {
+        clearTimeout(timeout);
+        wiggleAnimation.setValue(0);
+      };
+    } else {
+      wiggleAnimation.setValue(0);
+    }
+  }, [state, disabled, wiggleAnimation]);
+
   // Handle state changes
   useEffect(() => {
     if (state === 'closed') {
@@ -210,12 +257,21 @@ export const FortuneCookie: React.FC<FortuneCookieProps> = ({
                   outputRange: [1, 1.05, 1.02],
                 }),
               },
+              {
+                rotate: wiggleAnimation.interpolate({
+                  inputRange: [-1, 0, 1],
+                  outputRange: ['-8deg', '0deg', '8deg'],
+                }),
+              },
             ],
           },
         ]}
       >
-        <View testID="cookie-top" style={styles.cookieTop} />
-        <View testID="cookie-bottom" style={styles.cookieBottom} />
+        <Image
+          source={require('../../assets/images/fortune-cookie.png')}
+          style={styles.cookieImage}
+          resizeMode="contain"
+        />
 
         {/* Crack lines */}
         <Animated.View
@@ -437,50 +493,25 @@ export const FortuneCookie: React.FC<FortuneCookieProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
+    justifyContent: 'center',
+    alignItems: 'center',
     //backgroundColor: theme.colors.background,
   },
   cookieContainer: {
     width: '100%',
     height: '100%',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    justifyContent: 'center',
+    alignItems: 'center',
     position: 'relative',
   },
   cookie: {
-    width: 120,
-    height: 80,
+    width: 300,
+    height: 200,
     position: 'relative',
   },
-  cookieTop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 40,
-    backgroundColor: theme.colors.accent,
-    borderTopLeftRadius: 60,
-    borderTopRightRadius: 60,
-    borderWidth: 2,
-    borderColor: '#E6B85C',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  cookieBottom: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 40,
-    backgroundColor: '#E6B85C',
-    borderBottomLeftRadius: 60,
-    borderBottomRightRadius: 60,
-    borderWidth: 2,
-    borderColor: '#D4A54A',
+  cookieImage: {
+    width: '100%',
+    height: '100%',
   },
   crackLine: {
     position: 'absolute',
