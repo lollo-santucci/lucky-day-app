@@ -9,50 +9,50 @@ import { AstrologicalProfile, BirthDetails } from '../types';
 
 // LLM Configuration
 interface LLMConfig {
-  apiKey: string;
-  model: string;
-  maxTokens: number;
-  temperature: number;
-  timeout: number;
+    apiKey: string;
+    model: string;
+    maxTokens: number;
+    temperature: number;
+    timeout: number;
 }
 
 // LLM Request interface
 interface LLMRequest {
-  systemPrompt: string;
-  userPrompt: string;
-  maxTokens?: number;
-  temperature?: number;
+    systemPrompt: string;
+    userPrompt: string;
+    maxTokens?: number;
+    temperature?: number;
 }
 
 // LLM Response interface
 interface LLMResponse {
-  content: string;
-  usage?: {
-    promptTokens: number;
-    completionTokens: number;
-    totalTokens: number;
-  };
+    content: string;
+    usage?: {
+        promptTokens: number;
+        completionTokens: number;
+        totalTokens: number;
+    };
 }
 
 // Error types for better error handling
 export enum LLMErrorType {
-  TIMEOUT = 'TIMEOUT',
-  NETWORK = 'NETWORK',
-  API_KEY = 'API_KEY',
-  RATE_LIMIT = 'RATE_LIMIT',
-  INVALID_RESPONSE = 'INVALID_RESPONSE',
-  UNKNOWN = 'UNKNOWN'
+    TIMEOUT = 'TIMEOUT',
+    NETWORK = 'NETWORK',
+    API_KEY = 'API_KEY',
+    RATE_LIMIT = 'RATE_LIMIT',
+    INVALID_RESPONSE = 'INVALID_RESPONSE',
+    UNKNOWN = 'UNKNOWN'
 }
 
 export class LLMError extends Error {
-  constructor(
-    public type: LLMErrorType,
-    message: string,
-    public originalError?: Error
-  ) {
-    super(message);
-    this.name = 'LLMError';
-  }
+    constructor(
+        public type: LLMErrorType,
+        message: string,
+        public originalError?: Error
+    ) {
+        super(message);
+        this.name = 'LLMError';
+    }
 }
 
 /**
@@ -61,43 +61,35 @@ export class LLMError extends Error {
  * Implements 15-second timeout and comprehensive error handling
  */
 export class LLMService {
-  private openai: OpenAI;
-  private config: LLMConfig;
-  private isAvailable: boolean = false;
+    private openai: OpenAI;
+    private config: LLMConfig;
+    private isAvailable: boolean = false;
 
-  constructor(config?: Partial<LLMConfig>) {
-    this.config = {
-      apiKey: process.env.EXPO_PUBLIC_OPENAI_API_KEY || '',
-      model: process.env.EXPO_PUBLIC_OPENAI_MODEL || 'gpt-4o',
-      maxTokens: 150,
-      temperature: 0.7,
-      timeout: 15000, // 15 second timeout for better reliability
-      ...config
-    };
+    constructor(config?: Partial<LLMConfig>) {
+        this.config = {
+            apiKey: process.env.EXPO_PUBLIC_OPENAI_API_KEY || '',
+            model: process.env.EXPO_PUBLIC_OPENAI_MODEL || 'gpt-4o',
+            maxTokens: 150,
+            temperature: 0.7,
+            timeout: 15000, // 15 second timeout for better reliability
+            ...config
+        };
 
-    // Initialize OpenAI client
-    this.openai = new OpenAI({
-      apiKey: this.config.apiKey,
-      dangerouslyAllowBrowser: true, // Allow in test environment
-    });
+        // Initialize OpenAI client
+        this.openai = new OpenAI({
+            apiKey: this.config.apiKey,
+            dangerouslyAllowBrowser: true, // Allow in test environment
+        });
 
-    // Check if service is available
-    this.isAvailable = !!this.config.apiKey;
-  }
+        // Check if service is available
+        this.isAvailable = !!this.config.apiKey;
+    }
 
-  /**
-   * Check if LLM service is available
-   */
-  public isServiceAvailable(): boolean {
-    return this.isAvailable;
-  }
-
-  /**
-   * Main method to generate content using LLM with timeout and error handling
-   */
-  public async generateContent(request: LLMRequest): Promise<LLMResponse> {
-    if (!this.isAvailable) {
-      throw new LLMError(LLMErrorType.API_KEY, 'LLM service is not available - missing API key');
+    /**
+     * Check if LLM service is available
+     */
+    public isServiceAvailable(): boolean {
+        return this.isAvailable;
     }
 
     try {
@@ -163,10 +155,86 @@ export class LLMService {
         if (status === 429) {
           throw new LLMError(LLMErrorType.RATE_LIMIT, 'Rate limit exceeded', error instanceof Error ? error : undefined);
         }
-        if (status >= 500) {
-          throw new LLMError(LLMErrorType.NETWORK, 'Server error', error instanceof Error ? error : undefined);
+
+        try {
+            // Create timeout promise
+            const timeoutPromise = new Promise<never>((_, reject) => {
+                setTimeout(() => {
+                    reject(new LLMError(LLMErrorType.TIMEOUT, `Request timed out after ${this.config.timeout}ms`));
+                }, this.config.timeout);
+            });
+
+            // Create API call promise
+            const apiPromise = this.openai.chat.completions.create({
+                model: this.config.model,
+                messages: [
+                    {
+                        role: "system",
+                        content: request.systemPrompt
+                    },
+                    {
+                        role: "user",
+                        content: request.userPrompt
+                    }
+                ],
+                max_tokens: request.maxTokens || this.config.maxTokens,
+                temperature: request.temperature || this.config.temperature,
+            });
+
+            // Race between API call and timeout
+            const completion = await Promise.race([apiPromise, timeoutPromise]);
+
+            const content = completion.choices[0]?.message?.content?.trim();
+
+            if (!content) {
+                throw new LLMError(LLMErrorType.INVALID_RESPONSE, 'No content generated from LLM');
+            }
+
+            return {
+                content,
+                usage: completion.usage ? {
+                    promptTokens: completion.usage.prompt_tokens,
+                    completionTokens: completion.usage.completion_tokens,
+                    totalTokens: completion.usage.total_tokens
+                } : undefined
+            };
+
+        } catch (error) {
+            console.warn('LLM generation failed:', error);
+
+            // Re-throw LLMError as-is
+            if (error instanceof LLMError) {
+                throw error;
+            }
+
+            // Handle OpenAI specific errors
+            if (error && typeof error === 'object' && 'status' in error) {
+                const status = (error as any).status;
+                if (status === 401 || status === 403) {
+                    throw new LLMError(LLMErrorType.API_KEY, 'Invalid API key or insufficient permissions', error instanceof Error ? error : undefined);
+                }
+                if (status === 429) {
+                    throw new LLMError(LLMErrorType.RATE_LIMIT, 'Rate limit exceeded', error instanceof Error ? error : undefined);
+                }
+                if (status >= 500) {
+                    throw new LLMError(LLMErrorType.NETWORK, 'Server error', error instanceof Error ? error : undefined);
+                }
+            }
+
+            // Handle network errors
+            if (error && typeof error === 'object' && 'code' in error) {
+                const code = (error as any).code;
+                if (code === 'ENOTFOUND' || code === 'ECONNREFUSED' || code === 'ETIMEDOUT') {
+                    throw new LLMError(LLMErrorType.NETWORK, 'Network connection failed', error instanceof Error ? error : undefined);
+                }
+            }
+
+            // Default to unknown error
+            throw new LLMError(LLMErrorType.UNKNOWN, 'Unknown error occurred', error as Error);
         }
-      }
+    }
+
+
 
       // Handle network errors
       if (error && typeof error === 'object' && 'code' in error) {
@@ -175,7 +243,6 @@ export class LLMService {
         if (code === 'ENOTFOUND' || code === 'ECONNREFUSED' || code === 'ETIMEDOUT') {
           throw new LLMError(LLMErrorType.NETWORK, 'Network connection failed', error instanceof Error ? error : undefined);
         }
-      }
 
       // Default to unknown error
       console.error('Throwing unknown error');

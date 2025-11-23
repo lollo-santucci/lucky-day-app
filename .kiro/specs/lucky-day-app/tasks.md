@@ -157,7 +157,7 @@
     - _Requirements: 12.2, 12.3_
 
 - [ ] 7. Implement visual design system and theming
-  - [ ] 7.1 Create design token system
+  - [x] 7.1 Create design token system
     - Define color palette (Jade Red, Soft Gold, Paper Ivory, Ink Black)
     - Set up typography with Noto Sans/Satoshi and decorative fonts
     - Create spacing and layout constants
